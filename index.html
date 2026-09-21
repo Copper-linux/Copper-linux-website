@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Copper Linux — The Foundation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- CRT Scanline Overlay -->
+    <div id="crt-overlay" class="crt-overlay active"></div>
+    <!-- Custom Cursor Glow -->
+    <div id="cursor-glow" class="cursor-glow"></div>
+    <!-- Page Transition -->
+    <div id="page-transition" class="page-transition"></div>
+
+    <!-- ===== NAVBAR ===== -->
+    <nav id="navbar" class="navbar">
+        <a href="#/" class="nav-logo">
+            <span class="logo-bracket">[</span>
+            <span class="logo-text" id="logo-text">COPPER</span>
+            <span class="logo-bracket">]</span>
+        </a>
+
+        <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="nav-links" id="nav-links">
+            <a href="#/" class="nav-link" data-page="/">HOME</a>
+            <a href="#/daily-driving" class="nav-link" data-page="/daily-driving">DAILY</a>
+            <a href="#/security" class="nav-link" data-page="/security">VORTEX</a>
+            <a href="#/tools" class="nav-link" data-page="/tools">TOOLS</a>
+            <a href="#/contributions" class="nav-link" data-page="/contributions">CONTRIB</a>
+            <a href="#/contributors" class="nav-link" data-page="/contributors">TEAM</a>
+            <a href="#/docs" class="nav-link" data-page="/docs">DOCS</a>
+            <a href="https://github.com/placeholder" target="_blank" class="nav-link nav-link-ext">GIT ↗</a>
+
+            <div class="mode-toggle-wrap">
+                <span class="mode-label" id="mode-label">COPPER</span>
+                <button class="mode-toggle" id="mode-toggle" aria-label="Toggle mode">
+                    <span class="toggle-track">
+                        <span class="toggle-thumb" id="toggle-thumb"></span>
+                    </span>
+                </button>
+                <span class="mode-label" id="mode-label-alt">VORTEX</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ===== APP ROOT ===== -->
+    <main id="app"></main>
+
+    <!-- ===== FOOTER ===== -->
+    <footer class="footer">
+        <div class="container">
+            <pre class="footer-ascii">
+ ╔══════════════════════════════════════════════════════════════════╗
+ ║  COPPER LINUX  ·  Built by 4 humans  ·  Bugs are features      ║
+ ╚══════════════════════════════════════════════════════════════════╝</pre>
+            <div class="footer-links">
+                <a href="#">Source</a><span class="footer-dot">·</span>
+                <a href="#">Docs</a><span class="footer-dot">·</span>
+                <a href="#">Community</a>
+            </div>
+            <p class="footer-copy">© 2026 Copper Linux Project. Currently in development.</p>
+        </div>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
