@@ -109,9 +109,9 @@ var TERM_COMMANDS = {
     ],
     team: [
         'TEAM:',
-        '  12hrformat                 — Vortex Linux & Tools',
-        '  farcrowx                   — Core System & Infrastructure',
-        '  krishnarajyagru27-creator  — Package Maintenance',
+        '  12hrformat                 — Built Vortex Linux',
+        '  farcrowx                   — total noob',
+        '  krishnarajyagru27-creator  — Built the Core system of Copper linux',
     ],
     vortex: [
         'Vortex Linux — Security Edition',
@@ -275,9 +275,9 @@ async function ghGet(path) {
 
 /* the three of us + avatars from github (initials if the api is down) */
 var TEAM = [
-    { login: 'farcrowx',                  role: 'managing github, social accounts/supporter' },
-    { login: '12hrformat',                role: 'built voertex linux/the honored one' },
-    { login: 'krishnarajyagru27-creator', role: 'core system of copper linux/developer' },
+    { login: 'farcrowx',                  role: 'Managing github, social accounts-supporter' },
+    { login: '12hrforma',                role: 'Built Vortex linux-The Honored One' },
+    { login: 'krishnarajyagru27-creator', role: 'Built the core system of Copper linux-Developer' },
 ];
 
 var AVATAR_CACHE = {};
