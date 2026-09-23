@@ -275,9 +275,9 @@ async function ghGet(path) {
 
 /* the three of us + avatars from github (initials if the api is down) */
 var TEAM = [
-    { login: 'farcrowx',                  role: 'Core System & Infrastructure' },
-    { login: '12hrformat',                role: 'Vortex Linux & Tools' },
-    { login: 'krishnarajyagru27-creator', role: 'Package Maintenance' },
+    { login: 'farcrowx',                  role: 'managing github, social accounts/supporter' },
+    { login: '12hrformat',                role: 'built voertex linux/the honored one' },
+    { login: 'krishnarajyagru27-creator', role: 'core system of copper linux/developer' },
 ];
 
 var AVATAR_CACHE = {};
