@@ -1,12 +1,4 @@
-/**
- * =====================================================================
- * COPPER LINUX — app.js
- * Single-page router: dark panels, copper accent, breadcrumbs, a tools
- * table (#tbl-minimalist), a developers table, and a live commit
- * tracker driven by the GitHub API.
- * =====================================================================
- */
-
+/* app.js, does smth idk*/
 /* ------------------------------------------------------------------
    ROUTER
    ------------------------------------------------------------------ */
@@ -140,13 +132,13 @@ var TERM_COMMANDS = {
         'WARNING: Only use on systems you own or have permission to test.',
     ],
     neofetch: [
-        '        ___           OS:     Copper Linux v0.1.0-dev',
-        '       /   \\          Kernel: 6.8-copper-custom',
-        '      | C L |         Shell:  bash 5.2',
-        '       \\___/          DE:     TBD',
-        '      /     \\         RAM:    — MB / — MB',
-        '     /       \\        Team:   3 contributors',
-        '    /_________\\       Status: In Development',
+        '         OS:     Copper Linux ',
+        '         Kernel: linux',
+        '         Shell:  idk i like zsh',
+        '         DE:     TBD',
+        '         RAM:    too expensive',
+        '         Team:   3 contributors',
+        '         Status: In Development',
     ],
 };
 
@@ -187,7 +179,7 @@ function initTerminal() {
 }
 
 /* ------------------------------------------------------------------
-   TOOLS — fetch tools.json and render a BlackArch-style table
+   tools- fetch tools that are included in the os, inspired by blackarch.org
    ------------------------------------------------------------------ */
 async function loadToolsData() {
     var tbody = document.getElementById('tools-tbody');
@@ -229,7 +221,7 @@ function toolRow(t) {
         + '</tr>';
 }
 
-/* Tools search (matches BlackArch behaviour: name + description) */
+/* blackarch inspired, i like blackarch ok? dont judge */
 window.searchTools = function () {
     var input  = document.getElementById('searchTools');
     var filter = (input && input.value ? input.value.toUpperCase() : '');
@@ -251,8 +243,7 @@ window.searchTools = function () {
 /* ------------------------------------------------------------------
    GITHUB API — shared helpers
    Optional auth token: the site loads js/gh-config.js (gitignored)
-   if present; a token can also be stored in localStorage as 'gh_token'.
-   unauthenticated requests work fine (60 req/hr) for a low-traffic site.
+   the api gives around 5k requests per hour 
    ------------------------------------------------------------------ */
 var GH_REPOS = [
     { owner: 'Copper-linux', repo: 'Copper-linux-website', label: 'Website Repository', url: 'https://github.com/Copper-linux/Copper-linux-website', branch: '12hrformat-patch-1' },
