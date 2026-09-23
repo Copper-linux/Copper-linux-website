@@ -1,7 +1,5 @@
 /* app.js, does smth idk*/
-/* ------------------------------------------------------------------
-   ROUTER
-   ------------------------------------------------------------------ */
+/* routes: whats in the url hash decides what page shows */
 var ROUTES = {
     '/':              pageHome,
     '/daily-driving': pageDaily,
@@ -44,9 +42,7 @@ function navigate() {
 window.addEventListener('hashchange', navigate);
 document.addEventListener('DOMContentLoaded', navigate);
 
-/* ------------------------------------------------------------------
-   NAV HELPERS
-   ------------------------------------------------------------------ */
+/* highlight the right navbar item */
 var NAV_IDS = {
     '/':              'nav-home',
     '/daily-driving': 'nav-daily',
@@ -63,9 +59,7 @@ function setActiveNav(hash) {
     if (id) $('#' + id).addClass('active');
 }
 
-/* ------------------------------------------------------------------
-   MODE / THEME (Copper vs Vortex accent)
-   ------------------------------------------------------------------ */
+/* flip the accent color on vortex pages */
 function syncTheme(hash) {
     var isVortex = (hash === '/security' || hash === '/tools');
     document.body.classList.toggle('vortex', isVortex);
@@ -73,9 +67,7 @@ function syncTheme(hash) {
     $('#mode-vortex').toggleClass('active', isVortex);
 }
 
-/* ------------------------------------------------------------------
-   POST-RENDER HOOKS PER PAGE
-   ------------------------------------------------------------------ */
+/* page specific stuff to run after it renders */
 function bindPageInteractions(hash) {
     if (hash === '/') { initCarousel(); }
     if (hash === '/daily-driving' || hash === '/security') initTerminal();
@@ -87,16 +79,12 @@ function bindPageInteractions(hash) {
     }
 }
 
-/* ------------------------------------------------------------------
-   HEADER CAROUSEL (homepage only)
-   ------------------------------------------------------------------ */
+/* homepage carousel, nothing fancy */
 function initCarousel() {
     $('.carousel').carousel({ interval: 4000 });
 }
 
-/* ------------------------------------------------------------------
-   INTERACTIVE TERMINAL
-   ------------------------------------------------------------------ */
+/* fake terminal for the daily/vortex pages, type "help" to see commands */
 var TERM_COMMANDS = {
     help: [
         'Available commands:',
@@ -285,10 +273,7 @@ async function ghGet(path) {
     return res.json();
 }
 
-/* ------------------------------------------------------------------
-   TEAM — three contributors, avatars pulled from the GitHub API
-   (falls back to an initials placeholder when the API is unreachable)
-   ------------------------------------------------------------------ */
+/* the three of us + avatars from github (initials if the api is down) */
 var TEAM = [
     { login: 'farcrowx',                  role: 'Core System & Infrastructure' },
     { login: '12hrformat',                role: 'Vortex Linux & Tools' },
@@ -351,9 +336,7 @@ function renderTeam() {
     });
 }
 
-/* ------------------------------------------------------------------
-   TRACK — live commit feed from the Copper Linux repos (GitHub API)
-   ------------------------------------------------------------------ */
+/* live commit feed, powers the track page */
 var commitTimer = null;
 
 function startTrackPolling() {
@@ -457,22 +440,17 @@ function timeAgo(iso) {
     return new Date(iso).toISOString().slice(0, 10);
 }
 
-/* ------------------------------------------------------------------
-   UTILITY
-   ------------------------------------------------------------------ */
+/* tiny helpers */
 function escHtml(s) {
     var d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
 }
 
-/* ==================================================================
-   PAGE TEMPLATES
-   ================================================================== */
-
+/* all the page html lives below (no react here sorry) */
 function pageHome() {
     return ''
-    /* ---- Header carousel (homepage only) ---- */
+    /* top carousel */
     + '<header id="myCarousel" class="carousel slide" data-ride="carousel">'
     +   '<ol class="carousel-indicators">'
     +     '<li data-target="#myCarousel" data-slide-to="0" class="active"></li>'
@@ -790,9 +768,7 @@ function page404() {
     + '</div>';
 }
 
-/* ------------------------------------------------------------------
-   SHARED FRAGMENTS
-   ------------------------------------------------------------------ */
+/* bits reused by a few pages */
 function teamTable() {
     return '<table id="developers">'
         + '<thead><tr>'
