@@ -255,9 +255,22 @@ window.searchTools = function () {
    unauthenticated requests work fine (60 req/hr) for a low-traffic site.
    ------------------------------------------------------------------ */
 var GH_REPOS = [
-    { owner: 'Copper-linux', repo: 'Copper-linux-website', label: 'Website Repository',  url: 'https://github.com/Copper-linux/Copper-linux-website' },
-    { owner: 'Copper-linux', repo: 'copper',                label: 'Main Repository',     url: 'https://github.com/Copper-linux/copper' },
+    { owner: 'Copper-linux', repo: 'Copper-linux-website', label: 'Website Repository', url: 'https://github.com/Copper-linux/Copper-linux-website', branch: '12hrformat-patch-1' },
+    { owner: 'Copper-linux', repo: 'copper',                label: 'Main Repository',    url: 'https://github.com/Copper-linux/copper',                branch: 'main' },
 ];
+
+var GH_RATE_LIMITED = false;
+
+function markRateLimited() {
+    GH_RATE_LIMITED = true;
+    showRateBanner();
+}
+
+function showRateBanner() {
+    var banner = document.getElementById('track-banner');
+    if (!banner || banner.firstChild) return;
+    banner.innerHTML = '<div class="alert-rate"><i class="fas fa-exclamation-triangle"></i> GitHub API rate limit reached &mdash; sorry, you have to check the commits yourself :(</div>';
+}
 
 function ghToken() {
     var t = '';
@@ -300,6 +313,7 @@ async function avatarFor(login) {
         var u = await ghGet('/users/' + encodeURIComponent(login));
         AVATAR_CACHE[login] = (u && u.avatar_url) || '';
     } catch (e) {
+        if (e && e.message === 'rate limited') markRateLimited();
         AVATAR_CACHE[login] = '';
     }
     return AVATAR_CACHE[login];
@@ -335,6 +349,15 @@ function renderTeam() {
             }
         });
     });
+
+    Promise.all(TEAM.map(function (m) { return avatarFor(m.login); })).then(function () {
+        if (GH_RATE_LIMITED && !tbody.querySelector('.rate-note')) {
+            var tr = document.createElement('tr');
+            tr.className = 'rate-note';
+            tr.innerHTML = '<td colspan="5" class="dim-text track-warn"><i class="fas fa-exclamation-triangle"></i> GitHub rate limit reached &mdash; avatars may be missing this refresh :(</td>';
+            tbody.appendChild(tr);
+        }
+    });
 }
 
 /* ------------------------------------------------------------------
@@ -354,15 +377,19 @@ function stopTrackPolling() {
 function renderTrack() {
     var feed   = document.getElementById('track-feeds');
     var status = document.getElementById('track-status');
+    var banner = document.getElementById('track-banner');
     if (!feed) return;
     startTrackPolling();
 
+    GH_RATE_LIMITED = false;
+    if (banner) banner.innerHTML = '';
     status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching latest commits&hellip;';
     feed.innerHTML = '<div class="row">'
         + GH_REPOS.map(function (r) {
             return '<div class="col-md-6 track-col">'
                 + '<div class="panel panel-default text-left track-repo">'
                 + '<div class="panel-heading"><b>' + escHtml(r.label) + '</b>'
+                + ' <a class="branch-chip" href="' + escHtml(r.url + '/tree/' + r.branch) + '" target="_blank">' + escHtml(r.branch) + '</a>'
                 + ' <a class="repo-link" href="' + escHtml(r.url) + '" target="_blank">github.com/' + escHtml(r.owner + '/' + r.repo) + '</a>'
                 + '</div>'
                 + '<div class="list-group-item"><div class="commit-list" data-repo="' + escHtml(r.owner + '/' + r.repo) + '">'
@@ -386,8 +413,11 @@ function renderTrack() {
 async function loadRepoCommits(r) {
     var box = document.querySelector('.commit-list[data-repo="' + r.owner + '/' + r.repo + '"]');
     if (!box) return;
+    var cacheKey = 'track:' + r.owner + '/' + r.repo;
     try {
-        var commits = await ghGet('/repos/' + r.owner + '/' + r.repo + '/commits?per_page=6');
+        var path = '/repos/' + r.owner + '/' + r.repo + '/commits?per_page=6';
+        if (r.branch) path += '&sha=' + encodeURIComponent(r.branch);
+        var commits = await ghGet(path);
         if (!Array.isArray(commits) || !commits.length) {
             box.innerHTML = '<p class="dim-text">No commits pushed yet.</p>';
             return;
@@ -409,11 +439,19 @@ async function loadRepoCommits(r) {
                 + '</div>'
                 + '</div>';
         }).join('');
+        try { localStorage.setItem(cacheKey, JSON.stringify({ t: Date.now(), html: box.innerHTML })); } catch (e) { /* storage unavailable */ }
     } catch (e) {
+        if (e && e.message === 'rate limited') markRateLimited();
         var why = (e && e.message === 'not found')
             ? 'That repository does not exist yet.'
             : 'Could not reach the GitHub API (rate limit or network).';
-        box.innerHTML = '<p class="dim-text">' + why + '</p>';
+        var cached = null;
+        try { cached = JSON.parse(localStorage.getItem(cacheKey) || 'null'); } catch (e2) { cached = null; }
+        if (cached && cached.html && cached.html.indexOf('commit-item') > -1) {
+            box.innerHTML = '<p class="dim-text track-warn"><i class="fas fa-exclamation-triangle"></i> GitHub rate limit hit &mdash; showing last known commits.</p>' + cached.html;
+        } else {
+            box.innerHTML = '<p class="dim-text">' + why + '</p>';
+        }
     }
 }
 
@@ -736,7 +774,8 @@ function pageTrack() {
     +           ' <button type="button" id="track-refresh" class="btn btn-default btn-xs">Refresh now</button>'
     +         '</div>'
     +         '<div class="list-group-item">'
-    +           '<div class="info"><p><i class="fas fa-sync-alt"></i> Auto-refreshes every minute. Shows the latest commits pushed to the Copper Linux repositories on GitHub.</p></div>'
+    +           '<div class="info"><p><i class="fas fa-sync-alt"></i> Auto-refreshes every minute. Shows the latest commits on the tracked branches &mdash; <b>12hrformat-patch-1</b> for the website repo, <b>main</b> for the OS repo.</p></div>'
+    +           '<div id="track-banner"></div>'
     +           '<div id="track-status" class="track-status"></div>'
     +           '<div id="track-feeds"></div>'
     +         '</div>'

@@ -656,6 +656,23 @@ a.hcat { color: var(--cu-bright); }
 
 .repo-link:hover { color: var(--cu-bright); }
 
+.branch-chip {
+	display: inline-block;
+	font-family: var(--font-mono);
+	font-size: 10px;
+	text-transform: none;
+	letter-spacing: 0;
+	color: var(--cu-bright);
+	border: 1px solid var(--cu-deep);
+	border-radius: 3px;
+	padding: 1px 6px;
+	margin-left: 8px;
+	vertical-align: 1px;
+	background: rgba(0, 0, 0, 0.3);
+}
+
+.branch-chip:hover { background: var(--cu); color: #150f09; border-color: var(--cu); }
+
 .commit-item {
 	display: flex;
 	align-items: center;
@@ -703,6 +720,25 @@ a.hcat { color: var(--cu-bright); }
 }
 
 .dim-text { color: var(--dim); }
+
+.track-warn { color: #e1e111; margin: 0 0 8px 0; }
+
+.alert-rate {
+	margin: 0 0 10px 0;
+	padding: 10px 12px;
+	border: 1px solid #e1e111;
+	border-left: 3px solid #e1e111;
+	background: rgba(225, 225, 17, 0.08);
+	color: #fff;
+	border-radius: 3px;
+	font-family: var(--font-mono);
+	font-size: 13px;
+}
+
+.alert-rate i {
+	color: #e1e111;
+	margin-right: 6px;
+}
 
 /* ==========================================================================
    INFO / BADGES
