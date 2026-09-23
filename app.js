@@ -1,175 +1,111 @@
 /**
  * =====================================================================
  * COPPER LINUX — app.js
- * SPA router, interactive terminal, scroll animations, cursor glow,
- * page transitions, typing effects, and dynamic data fetching.
+ * Single-page router: dark panels, copper accent, breadcrumbs, a tools
+ * table (#tbl-minimalist), a developers table, and a live commit
+ * tracker driven by the GitHub API.
  * =====================================================================
  */
 
 /* ------------------------------------------------------------------
    ROUTER
    ------------------------------------------------------------------ */
-const ROUTES = {
+var ROUTES = {
     '/':              pageHome,
-    '/daily-driving': pageDailyDriving,
+    '/daily-driving': pageDaily,
     '/security':      pageSecurity,
     '/tools':         pageTools,
     '/contributions': pageContributions,
     '/contributors':  pageContributors,
-    '/docs':          pageDocs,
+    '/track':         pageTrack,
+};
+
+var TITLES = {
+    '/':              'Copper Linux - Practical Linux Distribution',
+    '/daily-driving': 'Copper Linux - Daily Driving Mode',
+    '/security':      'Vortex Linux - Security Edition',
+    '/tools':         'Tools - Copper Linux / Vortex',
+    '/contributions': 'Contribute - Copper Linux',
+    '/contributors':  'Team - Copper Linux',
+    '/track':         'Track - Copper Linux',
 };
 
 function getHash() { return location.hash.slice(1) || '/'; }
 
 function navigate() {
-    const hash = getHash();
-    const app  = document.getElementById('app');
-    const pt   = document.getElementById('page-transition');
+    stopTrackPolling();
+    var hash = getHash();
+    var app  = document.getElementById('app');
+    var html = (ROUTES[hash] || page404)();
 
-    // Page transition animation
-    pt.className = 'page-transition entering';
-    setTimeout(() => {
-        app.innerHTML = '';
-        const render = ROUTES[hash] || page404;
-        app.innerHTML = render();
+    $('#app').hide();
+    app.innerHTML = html;
+    $('#app').fadeIn('slow');
 
-        // Post-render hooks
-        syncTheme(hash);
-        setActiveNav(hash);
-        initScrollReveal();
-        bindPageInteractions(hash);
-        document.getElementById('nav-links').classList.remove('open');
-        document.getElementById('hamburger').classList.remove('open');
-        window.scrollTo(0, 0);
-
-        pt.className = 'page-transition leaving';
-        setTimeout(() => { pt.className = 'page-transition'; }, 400);
-    }, 350);
+    document.title = TITLES[hash] || TITLES['/'];
+    syncTheme(hash);
+    setActiveNav(hash);
+    bindPageInteractions(hash);
+    window.scrollTo(0, 0);
 }
 
 window.addEventListener('hashchange', navigate);
-document.addEventListener('DOMContentLoaded', () => {
-    initCursorGlow();
-    initHamburger();
-    initModeToggle();
-    // First load — skip transition
-    const app = document.getElementById('app');
-    const hash = getHash();
-    app.innerHTML = (ROUTES[hash] || page404)();
-    syncTheme(hash);
-    setActiveNav(hash);
-    initScrollReveal();
-    bindPageInteractions(hash);
-});
+document.addEventListener('DOMContentLoaded', navigate);
 
 /* ------------------------------------------------------------------
    NAV HELPERS
    ------------------------------------------------------------------ */
+var NAV_IDS = {
+    '/':              'nav-home',
+    '/daily-driving': 'nav-daily',
+    '/security':      'nav-vortex',
+    '/tools':         'nav-tools',
+    '/contributions': 'nav-contributions',
+    '/contributors':  'nav-contributors',
+    '/track':         'nav-track',
+};
+
 function setActiveNav(hash) {
-    document.querySelectorAll('.nav-link').forEach(a => {
-        a.classList.toggle('active', a.dataset.page === hash);
-    });
-}
-
-function initHamburger() {
-    const btn  = document.getElementById('hamburger');
-    const menu = document.getElementById('nav-links');
-    btn.addEventListener('click', () => {
-        btn.classList.toggle('open');
-        menu.classList.toggle('open');
-    });
+    $('.navbar-nav li').removeClass('active');
+    var id = NAV_IDS[hash];
+    if (id) $('#' + id).addClass('active');
 }
 
 /* ------------------------------------------------------------------
-   MODE / THEME
+   MODE / THEME (Copper vs Vortex accent)
    ------------------------------------------------------------------ */
-let isVortex = false;
-
-function initModeToggle() {
-    document.getElementById('mode-toggle').addEventListener('click', () => {
-        isVortex = !isVortex;
-        applyTheme();
-        // Redirect if on a mode-specific page
-        const h = getHash();
-        if (isVortex && (h === '/' || h === '/daily-driving')) location.hash = '/security';
-        if (!isVortex && (h === '/security' || h === '/tools')) location.hash = '/daily-driving';
-    });
-}
-
-function applyTheme() {
-    document.body.classList.toggle('vortex', isVortex);
-    document.getElementById('logo-text').textContent = isVortex ? 'VORTEX' : 'COPPER';
-}
-
 function syncTheme(hash) {
-    if (hash === '/security' || hash === '/tools') isVortex = true;
-    else if (hash === '/' || hash === '/daily-driving') isVortex = false;
-    applyTheme();
-}
-
-/* ------------------------------------------------------------------
-   CUSTOM CURSOR
-   ------------------------------------------------------------------ */
-function initCursorGlow() {
-    const g = document.getElementById('cursor-glow');
-    if (!g) return;
-    document.addEventListener('mousemove', e => {
-        g.style.left = e.clientX + 'px';
-        g.style.top  = e.clientY + 'px';
-    });
-    document.addEventListener('mouseover', e => {
-        const t = e.target.closest('a, button, .card, .btn, .nav-link, .pill, input, select');
-        g.classList.toggle('hover', !!t);
-    });
-}
-
-/* ------------------------------------------------------------------
-   SCROLL REVEAL (IntersectionObserver)
-   ------------------------------------------------------------------ */
-function initScrollReveal() {
-    const els = document.querySelectorAll('.reveal, .stagger');
-    if (!els.length) return;
-    const obs = new IntersectionObserver(entries => {
-        entries.forEach(e => {
-            if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
-        });
-    }, { threshold: 0.12 });
-    els.forEach(el => obs.observe(el));
-}
-
-/* ------------------------------------------------------------------
-   TYPING EFFECT
-   ------------------------------------------------------------------ */
-function startTyping(elId, text, speed) {
-    speed = speed || 60;
-    const el = document.getElementById(elId);
-    if (!el) return;
-    let i = 0;
-    el.textContent = '';
-    function tick() {
-        if (i < text.length) { el.textContent += text[i]; i++; setTimeout(tick, speed); }
-    }
-    tick();
+    var isVortex = (hash === '/security' || hash === '/tools');
+    document.body.classList.toggle('vortex', isVortex);
+    $('#mode-copper').toggleClass('active', !isVortex);
+    $('#mode-vortex').toggleClass('active', isVortex);
 }
 
 /* ------------------------------------------------------------------
    POST-RENDER HOOKS PER PAGE
    ------------------------------------------------------------------ */
 function bindPageInteractions(hash) {
-    if (hash === '/') {
-        startTyping('hero-typed', '> Built by 4 humans. Expect bugs.', 45);
-    }
+    if (hash === '/') { initCarousel(); }
+    if (hash === '/daily-driving' || hash === '/security') initTerminal();
     if (hash === '/tools') loadToolsData();
-    if (hash === '/contributors') loadContributorsData();
-    if (hash === '/daily-driving' || hash === '/security') {
-        initTerminal();
+    if (hash === '/contributors') renderTeam();
+    if (hash === '/track') {
+        renderTrack();
+        $('#track-refresh').on('click', renderTrack);
     }
+}
+
+/* ------------------------------------------------------------------
+   HEADER CAROUSEL (homepage only)
+   ------------------------------------------------------------------ */
+function initCarousel() {
+    $('.carousel').carousel({ interval: 4000 });
 }
 
 /* ------------------------------------------------------------------
    INTERACTIVE TERMINAL
    ------------------------------------------------------------------ */
-const TERM_COMMANDS = {
+var TERM_COMMANDS = {
     help: [
         'Available commands:',
         '  help      Show this message',
@@ -183,7 +119,7 @@ const TERM_COMMANDS = {
     about: [
         'Copper Linux — The Foundation.',
         'A minimal, practical Linux distribution built',
-        'by a small team of four people.',
+        'by a small team of three people.',
     ],
     version: [
         'Copper Linux v0.1.0-dev',
@@ -193,15 +129,14 @@ const TERM_COMMANDS = {
     ],
     team: [
         'TEAM:',
-        '  farcrowx                    — Core System',
-        '  12hrformat                  — Vortex Linux',
-        '  firstspot_7                 — UI/UX & Docs',
-        '  krishnarajyagru27-creator   — Packages',
+        '  12hrformat                 — Vortex Linux & Tools',
+        '  farcrowx                   — Core System & Infrastructure',
+        '  krishnarajyagru27-creator  — Package Maintenance',
     ],
     vortex: [
         'Vortex Linux — Security Edition',
         'Cybersecurity-focused reskin of Copper Linux.',
-        'Preinstalled tools for pentesting, CTFs, and research.',
+        'Preinstalled tools are planned for pentesting, CTFs, and research.',
         'WARNING: Only use on systems you own or have permission to test.',
     ],
     neofetch: [
@@ -210,23 +145,23 @@ const TERM_COMMANDS = {
         '      | C L |         Shell:  bash 5.2',
         '       \\___/          DE:     TBD',
         '      /     \\         RAM:    — MB / — MB',
-        '     /       \\        Team:   4 contributors',
+        '     /       \\        Team:   3 contributors',
         '    /_________\\       Status: In Development',
     ],
 };
 
 function initTerminal() {
-    const input = document.getElementById('term-input');
-    const body  = document.getElementById('term-body');
+    var input = document.getElementById('term-input');
+    var body  = document.getElementById('term-body');
     if (!input || !body) return;
 
-    const wrapper = document.querySelector('.terminal-window');
-    if (wrapper) wrapper.addEventListener('click', () => input.focus());
+    var wrapper = document.querySelector('.terminal-window');
+    if (wrapper) wrapper.addEventListener('click', function () { input.focus(); });
 
-    input.addEventListener('keydown', e => {
+    input.addEventListener('keydown', function (e) {
         if (e.key !== 'Enter') return;
-        const raw = input.value.trim();
-        const cmd = raw.toLowerCase();
+        var raw = input.value.trim();
+        var cmd = raw.toLowerCase();
         if (!raw) return;
 
         addLine('$ ' + raw, 'cmd');
@@ -234,7 +169,7 @@ function initTerminal() {
         if (cmd === 'clear') {
             body.innerHTML = '';
         } else if (TERM_COMMANDS[cmd]) {
-            TERM_COMMANDS[cmd].forEach(l => addLine(l));
+            TERM_COMMANDS[cmd].forEach(function (l) { addLine(l); });
         } else {
             addLine('copper: command not found: ' + raw, 'err');
         }
@@ -244,7 +179,7 @@ function initTerminal() {
     });
 
     function addLine(text, cls) {
-        const d = document.createElement('div');
+        var d = document.createElement('div');
         d.className = 'terminal-line' + (cls ? ' ' + cls : '');
         d.textContent = text;
         body.appendChild(d);
@@ -252,110 +187,252 @@ function initTerminal() {
 }
 
 /* ------------------------------------------------------------------
-   TOOLS — fetch tools.json
+   TOOLS — fetch tools.json and render a BlackArch-style table
    ------------------------------------------------------------------ */
 async function loadToolsData() {
-    const grid   = document.getElementById('tools-grid');
-    const search = document.getElementById('tool-search');
-    const cat    = document.getElementById('tool-cat');
-    if (!grid) return;
+    var tbody = document.getElementById('tools-tbody');
+    var count = document.getElementById('tool-count');
+    if (!tbody) return;
 
     try {
-        const res   = await fetch('tools.json');
-        const tools = await res.json();
+        var res   = await fetch('tools.json');
+        var tools = await res.json();
+        tools = Array.isArray(tools) ? tools : [];
 
-        // Populate categories
-        const cats = [...new Set(tools.map(t => t.category))].sort();
-        cats.forEach(c => {
-            const o = document.createElement('option');
-            o.value = c; o.textContent = c;
-            cat.appendChild(o);
-        });
+        if (count) count.textContent = tools.length;
 
-        function render() {
-            const q = search.value.toLowerCase();
-            const f = cat.value;
-            const list = tools.filter(t => {
-                const ms = t.name.toLowerCase().includes(q) || t.description.toLowerCase().includes(q);
-                const mc = f === 'all' || t.category === f;
-                return ms && mc;
-            });
-            if (!list.length) {
-                grid.innerHTML = '<p style="grid-column:1/-1;color:var(--dim)">No tools match.</p>';
-                return;
-            }
-            grid.innerHTML = list.map(t => {
-                const bc = 'badge-' + t.status.toLowerCase();
-                const cmdHtml = t.command
-                    ? '<div class="tool-cmd"><code>$ ' + escHtml(t.command) + '</code></div>'
-                    : '';
-                return '<div class="card tool-card">'
-                    + '<div class="tool-header"><h3>' + escHtml(t.name) + '</h3>'
-                    + '<span class="badge ' + bc + '">' + escHtml(t.status) + '</span></div>'
-                    + '<span style="font-size:0.8rem;color:var(--dim)">' + escHtml(t.category) + '</span>'
-                    + '<p class="tool-desc">' + escHtml(t.description) + '</p>'
-                    + cmdHtml + '</div>';
-            }).join('');
+        if (!tools.length) {
+            tbody.innerHTML = '<tr><td colspan="5" class="tbl-name">No tools available yet — the Vortex toolkit is still in development.</td></tr>';
+            return;
         }
-
-        search.addEventListener('input', render);
-        cat.addEventListener('change', render);
-        render();
+        tbody.innerHTML = tools.map(toolRow).join('');
     } catch (err) {
-        grid.innerHTML = '<div class="notice" style="grid-column:1/-1;border-color:#e74c3c">Failed to load tools.json.</div>';
+        tbody.innerHTML = '<tr><td colspan="5" class="tbl-name">Failed to load tools.json.</td></tr>';
     }
 }
 
-/* ------------------------------------------------------------------
-   CONTRIBUTORS — fetch GitHub API
-   ------------------------------------------------------------------ */
-async function loadContributorsData() {
-    const grid = document.getElementById('contrib-grid');
-    if (!grid) return;
+function toolRow(t) {
+    var status = t.status ? '<span class="tool-status status-' + escHtml(String(t.status).toLowerCase()) + '">' + escHtml(t.status) + '</span> ' : '';
+    var cat = t.category
+        ? '<td class="tbl-categorie"><a class="hcat" href="#/tools" title="' + escHtml(t.category) + '">' + escHtml(t.category) + '</a></td>'
+        : '<td class="tbl-categorie">-</td>';
+    var web = '<span style="color:#555">&#8212;</span>';
+    if (t.url) web = '<a href="' + escHtml(t.url) + '" target="_blank"><i class="fas fa-external-link-alt fa-lg"></i></a>';
+    else if (t.command) web = '<span style="color:#555" title="' + escHtml('$ ' + t.command) + '"><i class="fas fa-terminal"></i></span>';
 
-    const team = [
-        { login: 'farcrowx', role: 'Core System & Infrastructure' },
-        { login: '12hrformat', role: 'Vortex Linux & Tools' },
-        { login: 'firstspot_7', role: 'UI/UX & Documentation' },
-        { login: 'krishnarajyagru27-creator', role: 'Package Maintenance' },
-    ];
+    return '<tr>'
+        + '<td class="tbl-name">' + status + escHtml(t.name || '') + '</td>'
+        + '<td class="tbl-version vcat">' + escHtml(t.status || '-') + '</td>'
+        + '<td class="tbl-description dcat">' + escHtml(t.description || '') + '</td>'
+        + cat
+        + '<td class="tbl-homepage">' + web + '</td>'
+        + '</tr>';
+}
 
-    grid.innerHTML = '';
-
-    for (const m of team) {
-        let name = m.login, avatar = '', bio = 'Contribution details coming soon.', url = 'https://github.com/' + m.login;
-        try {
-            // Public GitHub API — no key needed at low volume
-            const r = await fetch('https://api.github.com/users/' + m.login);
-            if (r.ok) {
-                const d = await r.json();
-                name   = d.name || m.login;
-                avatar = d.avatar_url || '';
-                bio    = d.bio || bio;
-                url    = d.html_url || url;
-            }
-        } catch (e) { /* graceful fallback */ }
-
-        const imgTag = avatar
-            ? '<img src="' + escHtml(avatar) + '" alt="' + escHtml(m.login) + '" class="avatar">'
-            : '<div class="avatar"></div>';
-
-        grid.innerHTML += '<div class="card contrib-card">'
-            + imgTag
-            + '<div>'
-            + '<h3>' + escHtml(name) + '</h3>'
-            + '<a href="' + escHtml(url) + '" target="_blank" class="github-link">@' + escHtml(m.login) + '</a>'
-            + '<p class="role">' + escHtml(m.role) + '</p>'
-            + '<p class="bio">' + escHtml(bio) + '</p>'
-            + '</div></div>';
+/* Tools search (matches BlackArch behaviour: name + description) */
+window.searchTools = function () {
+    var input  = document.getElementById('searchTools');
+    var filter = (input && input.value ? input.value.toUpperCase() : '');
+    var table  = document.getElementById('tbl-minimalist');
+    if (!table) return;
+    var tr = table.getElementsByTagName('tr');
+    for (var i = 0; i < tr.length; i++) {
+        var td = tr[i].getElementsByTagName('td')[0];
+        var d  = tr[i].getElementsByTagName('td')[2];
+        if (td) {
+            var txt  = td.textContent || td.innerText;
+            var txtd = d ? (d.textContent || d.innerText) : '';
+            tr[i].style.display =
+                (txt.toUpperCase().indexOf(filter) > -1 || txtd.toUpperCase().indexOf(filter) > -1) ? '' : 'none';
+        }
     }
+};
+
+/* ------------------------------------------------------------------
+   GITHUB API — shared helpers
+   Optional auth token: the site loads js/gh-config.js (gitignored)
+   if present; a token can also be stored in localStorage as 'gh_token'.
+   unauthenticated requests work fine (60 req/hr) for a low-traffic site.
+   ------------------------------------------------------------------ */
+var GH_REPOS = [
+    { owner: 'Copper-linux', repo: 'Copper-linux-website', label: 'Website Repository',  url: 'https://github.com/Copper-linux/Copper-linux-website' },
+    { owner: 'Copper-linux', repo: 'copper',                label: 'Main Repository',     url: 'https://github.com/Copper-linux/copper' },
+];
+
+function ghToken() {
+    var t = '';
+    try { t = localStorage.getItem('gh_token') || ''; } catch (e) { t = ''; }
+    if (!t && typeof GH_TOKEN !== 'undefined' && GH_TOKEN) t = GH_TOKEN;
+    return t;
+}
+
+function ghHeaders() {
+    var token = ghToken();
+    return token ? { headers: { Authorization: 'token ' + token } } : {};
+}
+
+async function ghGet(path) {
+    var res = await fetch('https://api.github.com' + path, ghHeaders());
+    if (!res.ok) {
+        if (res.status === 404) throw new Error('not found');
+        if (res.status === 403) throw new Error('rate limited');
+        throw new Error('http ' + res.status);
+    }
+    return res.json();
+}
+
+/* ------------------------------------------------------------------
+   TEAM — three contributors, avatars pulled from the GitHub API
+   (falls back to an initials placeholder when the API is unreachable)
+   ------------------------------------------------------------------ */
+var TEAM = [
+    { login: 'farcrowx',                  role: 'Core System & Infrastructure' },
+    { login: '12hrformat',                role: 'Vortex Linux & Tools' },
+    { login: 'krishnarajyagru27-creator', role: 'Package Maintenance' },
+];
+
+var AVATAR_CACHE = {};
+
+async function avatarFor(login) {
+    if (AVATAR_CACHE[login] !== undefined) return AVATAR_CACHE[login];
+    AVATAR_CACHE[login] = '';
+    try {
+        var u = await ghGet('/users/' + encodeURIComponent(login));
+        AVATAR_CACHE[login] = (u && u.avatar_url) || '';
+    } catch (e) {
+        AVATAR_CACHE[login] = '';
+    }
+    return AVATAR_CACHE[login];
+}
+
+function renderTeam() {
+    var tbody = document.getElementById('team-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = TEAM.map(function (m) {
+        var first = (m.login || '?').charAt(0).toUpperCase();
+        return '<tr>'
+            + '<td><img class="team-avatar" data-login="' + escHtml(m.login) + '" alt="' + escHtml(m.login)
+            + '" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></td>'
+            + '<td itemprop="givenName">' + escHtml(m.login) + '</td>'
+            + '<td itemprop="additionalName">@' + escHtml(m.login) + '</td>'
+            + '<td><a href="https://github.com/' + escHtml(m.login) + '" target="_blank">github.com/' + escHtml(m.login) + '</a></td>'
+            + '<td itemprop="jobTitle">' + escHtml(m.role) + '</td>'
+            + '</tr>';
+    }).join('');
+
+    TEAM.forEach(function (m) {
+        avatarFor(m.login).then(function (url) {
+            var img = tbody.querySelector('img[data-login="' + m.login + '"]');
+            if (!img) return;
+            if (url) {
+                img.src = url;
+            } else {
+                var ph = document.createElement('span');
+                ph.className = 'avatar-ph';
+                ph.textContent = (m.login || '?').charAt(0).toUpperCase();
+                img.parentNode.replaceChild(ph, img);
+            }
+        });
+    });
+}
+
+/* ------------------------------------------------------------------
+   TRACK — live commit feed from the Copper Linux repos (GitHub API)
+   ------------------------------------------------------------------ */
+var commitTimer = null;
+
+function startTrackPolling() {
+    stopTrackPolling();
+    commitTimer = setInterval(renderTrack, 60000); /* refresh every minute */
+}
+
+function stopTrackPolling() {
+    if (commitTimer) { clearInterval(commitTimer); commitTimer = null; }
+}
+
+function renderTrack() {
+    var feed   = document.getElementById('track-feeds');
+    var status = document.getElementById('track-status');
+    if (!feed) return;
+    startTrackPolling();
+
+    status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching latest commits&hellip;';
+    feed.innerHTML = '<div class="row">'
+        + GH_REPOS.map(function (r) {
+            return '<div class="col-md-6 track-col">'
+                + '<div class="panel panel-default text-left track-repo">'
+                + '<div class="panel-heading"><b>' + escHtml(r.label) + '</b>'
+                + ' <a class="repo-link" href="' + escHtml(r.url) + '" target="_blank">github.com/' + escHtml(r.owner + '/' + r.repo) + '</a>'
+                + '</div>'
+                + '<div class="list-group-item"><div class="commit-list" data-repo="' + escHtml(r.owner + '/' + r.repo) + '">'
+                + '<p class="dim-text">Loading commits&hellip;</p></div></div>'
+                + '</div>'
+                + '</div>';
+        }).join('')
+        + '</div>';
+
+    var remaining = GH_REPOS.length;
+    GH_REPOS.forEach(function (r) {
+        loadRepoCommits(r).then(function () {
+            remaining--;
+            if (remaining <= 0) {
+                status.textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+            }
+        });
+    });
+}
+
+async function loadRepoCommits(r) {
+    var box = document.querySelector('.commit-list[data-repo="' + r.owner + '/' + r.repo + '"]');
+    if (!box) return;
+    try {
+        var commits = await ghGet('/repos/' + r.owner + '/' + r.repo + '/commits?per_page=6');
+        if (!Array.isArray(commits) || !commits.length) {
+            box.innerHTML = '<p class="dim-text">No commits pushed yet.</p>';
+            return;
+        }
+        box.innerHTML = commits.map(function (c) {
+            var author = (c.commit && c.commit.author) || {};
+            var login  = (c.author && c.author.login) || author.name || 'unknown';
+            var avatar = (c.author && c.author.avatar_url) || '';
+            var msg    = String((c.commit && c.commit.message) || '').split('\n')[0] || '(no message)';
+            var sha    = String(c.sha || '').slice(0, 7);
+            var when   = author.date ? timeAgo(author.date) : '';
+            var link   = (c.html_url) || r.url;
+            return '<div class="commit-item">'
+                + '<img class="commit-avatar" alt="' + escHtml(login) + '" src="' + escHtml(avatar)
+                + '" onerror="this.style.visibility=\'hidden\'" />'
+                + '<div class="commit-main">'
+                +   '<a class="commit-msg" href="' + escHtml(link) + '" target="_blank" title="' + escHtml(msg) + '">' + escHtml(msg) + '</a>'
+                +   '<div class="commit-meta">' + escHtml(login) + ' committed ' + escHtml(when) + ' &middot; <code>' + escHtml(sha) + '</code></div>'
+                + '</div>'
+                + '</div>';
+        }).join('');
+    } catch (e) {
+        var why = (e && e.message === 'not found')
+            ? 'That repository does not exist yet.'
+            : 'Could not reach the GitHub API (rate limit or network).';
+        box.innerHTML = '<p class="dim-text">' + why + '</p>';
+    }
+}
+
+function timeAgo(iso) {
+    var then = new Date(iso).getTime();
+    if (isNaN(then)) return '';
+    var s = Math.floor((Date.now() - then) / 1000);
+    if (s < 60) return s + 's ago';
+    var m = Math.floor(s / 60);  if (m < 60)  return m + 'm ago';
+    var h = Math.floor(m / 60);  if (h < 24)  return h + 'h ago';
+    var d = Math.floor(h / 24);  if (d < 30)  return d + 'd ago';
+    return new Date(iso).toISOString().slice(0, 10);
 }
 
 /* ------------------------------------------------------------------
    UTILITY
    ------------------------------------------------------------------ */
 function escHtml(s) {
-    const d = document.createElement('div');
+    var d = document.createElement('div');
     d.textContent = s;
     return d.innerHTML;
 }
@@ -366,305 +443,351 @@ function escHtml(s) {
 
 function pageHome() {
     return ''
-    + '<section class="hero section">'
-    +   '<div class="hero-bg-grid"></div>'
-    +   '<div class="container hero-content">'
-    +     '<div class="dev-badge">IN DEVELOPMENT · TEAM OF 4</div>'
-    +     '<div class="glitch-wrap">'
-    +       '<h1 class="hero-title">COPPER<br><span class="accent">LINUX</span></h1>'
+    /* ---- Header carousel (homepage only) ---- */
+    + '<header id="myCarousel" class="carousel slide" data-ride="carousel">'
+    +   '<ol class="carousel-indicators">'
+    +     '<li data-target="#myCarousel" data-slide-to="0" class="active"></li>'
+    +     '<li data-target="#myCarousel" data-slide-to="1"></li>'
+    +   '</ol>'
+    +   '<div class="carousel-inner">'
+    +     '<div class="item active">'
+    +       '<div class="fill slide-copper"></div>'
+    +       '<div class="carousel-caption"><h2>Copper Linux <br />Practical Linux Distribution</h2></div>'
     +     '</div>'
-    +     '<p class="hero-tagline"><span id="hero-typed"></span><span class="typed-cursor"></span></p>'
-    +     '<div class="btn-group">'
-    +       '<a href="#/daily-driving" class="btn btn-accent">GET COPPER LINUX</a>'
-    +       '<a href="#/security" class="btn">EXPLORE VORTEX ↗</a>'
-    +       '<a href="https://github.com/Copper-Linux" target="_blank" class="btn">GITHUB</a>'
-    +     '</div>'
-    +   '</div>'
-    + '</section>'
-
-    + '<div class="marquee"><div class="marquee-inner">'
-    + 'MINIMAL · PRACTICAL · HONEST · BUILT BY FOUR · BUGS ARE FEATURES · EXPECT ROUGH EDGES · OPEN SOURCE · COPPER LINUX · '
-    + 'MINIMAL · PRACTICAL · HONEST · BUILT BY FOUR · BUGS ARE FEATURES · EXPECT ROUGH EDGES · OPEN SOURCE · COPPER LINUX · '
-    + '</div></div>'
-
-    + '<section class="section reveal">'
-    +   '<div class="container">'
-    +     '<h2>What is Copper Linux?</h2>'
-    +     '<p style="color:var(--dim);max-width:700px">We are focused on building a practical Linux system without unnecessary complexity. We are starting with the daily-driving experience while actively developing Vortex Linux alongside it. We are a small team, so progress is steady but bugs and rough edges are normal.</p>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section">'
-    +   '<div class="container grid-2 stagger">'
-    +     '<div class="mode-card">'
-    +       '<h3>Daily Driving</h3>'
-    +       '<p>A practical Linux environment for everyday computing — web, code, work, media. Actively developed by a four-person team.</p>'
-    +       '<a href="#/daily-driving" class="btn">EXPLORE →</a>'
-    +     '</div>'
-    +     '<div class="mode-card">'
-    +       '<h3>Vortex Linux</h3>'
-    +       '<p>Security-focused reskin of Copper Linux for researchers, pentesters, and people learning cybersecurity. Preinstalled tools.</p>'
-    +       '<a href="#/security" class="btn">EXPLORE →</a>'
+    +     '<div class="item">'
+    +       '<div class="fill slide-vortex"></div>'
+    +       '<div class="carousel-caption"><h2>Vortex Linux <br />Security-Focused Edition</h2></div>'
     +     '</div>'
     +   '</div>'
-    + '</section>';
+    +   '<a class="left carousel-control" data-target="#myCarousel" data-slide="prev"><span class="icon-prev"></span></a>'
+    +   '<a class="right carousel-control" data-target="#myCarousel" data-slide="next"><span class="icon-next"></span></a>'
+    + '</header>'
+
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title header-copper"><h1>Copper</h1> <h2>Homepage</h2></div>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>About</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>Copper Linux is a minimal, practical Linux distribution built by a small team of three people. We focus on the daily-driving experience first while actively developing <a href="#/security">Vortex Linux</a>, the security-focused edition, alongside it.</p>'
+    +           '<p>To report bugs and request features, please visit the <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub repository</a> and open an issue — bug reports and pull requests help the project tremendously.</p>'
+    +           '<p>Status: <span class="blyellow">Still in development</span> — neither Copper Linux nor Vortex Linux are available yet.</p>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Editions</h2></div>'
+    +     '<div class="col-md-6">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Copper — Daily Driving Mode</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>A practical Linux environment for everyday computing — web, code, work, media.</p>'
+    +           '<div class="code-block"><p class="command">copper --status</p><p>Still in development — not available yet.</p></div>'
+    +           '<a href="#/daily-driving" class="btn btn-default">Daily Driving Mode &rarr;</a>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="col-md-6">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Vortex — Security Edition</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>Cybersecurity-focused reskin for researchers, pentesters, CTFs, and security students. Preinstalled tools are planned.</p>'
+    +           '<div class="code-block"><p class="command">vortex --tools list</p><p>Not available yet — still in development.</p></div>'
+    +           '<a href="#/security" class="btn btn-default">Security Mode &rarr;</a>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
+    +   '</div>'
+    + '</div>';
 }
 
-function pageDailyDriving() {
+function pageDaily() {
     return ''
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<div class="dev-badge">DAILY DRIVING MODE</div>'
-    +     '<h1 class="page-title">Copper Linux</h1>'
-    +     '<p class="page-subtitle">A practical desktop distro for web, code, school, work, and media.</p>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section reveal">'
-    +   '<div class="container">'
-    +     '<div class="notice">Since we are only a team of four people, you may encounter bugs and glitches. Reporting them on our GitHub helps the project tremendously.</div>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section">'
-    +   '<div class="container grid-2 stagger">'
-    +     '<div class="card"><h3>Included / Active</h3>'
-    +       '<ul class="check-list">'
-    +         '<li>Practical desktop environment</li>'
-    +         '<li>Useful default software</li>'
-    +         '<li>Straightforward setup</li>'
-    +         '<li>Linux development environment</li>'
-    +       '</ul>'
-    +     '</div>'
-    +     '<div class="card"><h3>Planned / In Development</h3>'
-    +       '<ul class="wait-list">'
-    +         '<li>System customization UI</li>'
-    +         '<li>Automated regular improvements</li>'
-    +         '<li>Better coding compatibility</li>'
-    +       '</ul>'
-    +     '</div>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section reveal">'
-    +   '<div class="container">'
-    +     '<h2>Try It</h2>'
-    +     '<div class="terminal-window">'
-    +       '<div class="terminal-titlebar"><span>tty0</span><span>copper@copper</span></div>'
-    +       '<div class="terminal-body" id="term-body">'
-    +         '<div class="terminal-line sys">Copper Linux v0.1.0-dev — Development Edition</div>'
-    +         '<div class="terminal-line sys">Type "help" for available commands.</div>'
-    +       '</div>'
-    +       '<div class="terminal-input-row">'
-    +         '<span class="terminal-prompt">$</span>'
-    +         '<input type="text" id="term-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="type a command...">'
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title"><h1>Copper</h1> <h2>Daily Driving Mode</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Copper</li></ol>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>About</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>A practical desktop distro for web, code, school, work, and media. Since we are only a team of three people, you may encounter bugs and glitches — <a href="https://github.com/Copper-linux/copper" target="_blank">reporting them</a> helps the project tremendously.</p>'
+    +         '</div>'
     +       '</div>'
     +     '</div>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section text-center reveal">'
-    +   '<div class="container">'
-    +     '<h2>Get Copper Linux</h2>'
-    +     '<p style="color:var(--dim)">We are currently in active development. ISO downloads are coming soon.</p>'
-    +     '<div class="terminal-block" style="max-width:360px;margin:20px auto;text-align:left">'
-    +       '$ copper --status<br>Copper Linux<br>Building from source required.'
+    +     '<div class="col-md-6">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Included / Active</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<ul class="list-group">'
+    +             '<li class="list-group-item"><i class="fas fa-check" style="color:#6ae400;margin-right:8px"></i>Practical desktop environment</li>'
+    +             '<li class="list-group-item"><i class="fas fa-check" style="color:#6ae400;margin-right:8px"></i>Useful default software</li>'
+    +             '<li class="list-group-item"><i class="fas fa-check" style="color:#6ae400;margin-right:8px"></i>Straightforward setup</li>'
+    +             '<li class="list-group-item"><i class="fas fa-check" style="color:#6ae400;margin-right:8px"></i>Linux development environment</li>'
+    +           '</ul>'
+    +         '</div>'
+    +       '</div>'
     +     '</div>'
-    +     '<a href="https://github.com/Copper-Linux" target="_blank" class="btn btn-accent" style="margin-top:16px">VIEW ON GITHUB</a>'
+    +     '<div class="col-md-6">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Planned / In Development</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<ul class="list-group">'
+    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#e1e111;margin-right:8px"></i>System customization UI</li>'
+    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#e1e111;margin-right:8px"></i>Automated regular improvements</li>'
+    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#e1e111;margin-right:8px"></i>Better coding compatibility</li>'
+    +           '</ul>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Try It</h2></div>'
+    +     '<div class="col-lg-12">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>tty0 &mdash; copper@copper</b></div>'
+    +         '<div class="list-group-item">'
+    +           terminalBlock('copper@copper', 'Copper Linux v0.1.0-dev — Development Edition', 'Type "help" for available commands.', '$')
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Downloads</h2></div>'
+    +     '<div class="col-lg-12">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Download Copper Linux</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<div class="info" style="border-color:#e1e111"><p><i class="fas fa-exclamation-triangle"></i> <b>Still in development.</b> Copper Linux is not available yet — there is nothing to download at this time.</p></div>'
+    +           '<div class="code-block"><p class="command">copper --status</p><p>Copper Linux</p><p>Status:   still in development</p><p>Downloads: not available yet</p></div>'
+    +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">View on GitHub</a>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
     +   '</div>'
-    + '</section>';
+    + '</div>';
 }
 
 function pageSecurity() {
     return ''
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<div class="dev-badge">SECURITY MODE</div>'
-    +     '<h1 class="page-title">Vortex Linux</h1>'
-    +     '<p class="page-subtitle">The cybersecurity-focused edition of Copper Linux.</p>'
-    +     '<p style="color:var(--dim);max-width:700px">A specialized reskin built for security research, penetration testing, CTFs, network testing, and cybersecurity learning, with preinstalled tools.</p>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section reveal">'
-    +   '<div class="container">'
-    +     '<div class="notice" style="border-color:#e74c3c"><strong>CRITICAL:</strong> Only use security tools against systems you own or have explicit permission to test.</div>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<h2>Designed For</h2>'
-    +     '<div class="pill-grid stagger">'
-    +       '<span class="pill">Security Researchers</span>'
-    +       '<span class="pill">Penetration Testers</span>'
-    +       '<span class="pill">CTF Players</span>'
-    +       '<span class="pill">Cybersecurity Students</span>'
-    +       '<span class="pill">Network Testing</span>'
-    +       '<span class="pill">Security Labs</span>'
-    +     '</div>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section reveal">'
-    +   '<div class="container">'
-    +     '<h2>Terminal</h2>'
-    +     '<div class="terminal-window">'
-    +       '<div class="terminal-titlebar"><span>tty0</span><span>root@vortex</span></div>'
-    +       '<div class="terminal-body" id="term-body">'
-    +         '<div class="terminal-line sys">Vortex Linux (Copper Security Edition)</div>'
-    +         '<div class="terminal-line sys">Type "help" for available commands.</div>'
-    +       '</div>'
-    +       '<div class="terminal-input-row">'
-    +         '<span class="terminal-prompt">#</span>'
-    +         '<input type="text" id="term-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="type a command...">'
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title"><h1>Vortex</h1> <h2>Security Edition</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Vortex</li></ol>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>About</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>The cybersecurity-focused edition of Copper Linux. A specialized reskin built for security research, penetration testing, CTFs, network testing, and cybersecurity learning, with preinstalled tools planned.</p>'
+    +           '<div class="info" style="border-color:#ff2c2c"><p><i class="fas fa-exclamation-triangle"></i> <b>CRITICAL:</b> Only use security tools against systems you own or have explicit permission to test.</p></div>'
+    +         '</div>'
     +       '</div>'
     +     '</div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Designed For</h2></div>'
+    +     '<div class="col-lg-12">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Audience</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<ul class="list-group">'
+    +             '<li class="list-group-item"><i class="fas fa-user-secret" style="color:#4BA6E7;margin-right:8px"></i>Security Researchers</li>'
+    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#4BA6E7;margin-right:8px"></i>Penetration Testers</li>'
+    +             '<li class="list-group-item"><i class="fas fa-flag" style="color:#4BA6E7;margin-right:8px"></i>CTF Players</li>'
+    +             '<li class="list-group-item"><i class="fas fa-graduation-cap" style="color:#4BA6E7;margin-right:8px"></i>Cybersecurity Students</li>'
+    +             '<li class="list-group-item"><i class="fas fa-network-wired" style="color:#4BA6E7;margin-right:8px"></i>Network Testing</li>'
+    +             '<li class="list-group-item"><i class="fas fa-flask" style="color:#4BA6E7;margin-right:8px"></i>Security Labs</li>'
+    +           '</ul>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Terminal</h2></div>'
+    +     '<div class="col-lg-12">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>tty0 &mdash; root@vortex</b></div>'
+    +         '<div class="list-group-item">'
+    +           terminalBlock('root@vortex', 'Vortex Linux (Copper Security Edition)', 'Type "help" for available commands.', '#')
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Included Toolkit</h2></div>'
+    +     '<div class="col-lg-12">'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Tools</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>Vortex Linux is still in development and is <b>not available yet</b>. The preconfigured security toolkit will be added as the project matures &mdash; check back later.</p>'
+    +           '<a href="#/tools" class="btn btn-default">Tools Directory &rarr;</a>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
     +   '</div>'
-    + '</section>'
-
-    + '<section class="section text-center reveal">'
-    +   '<div class="container">'
-    +     '<h2>Included Toolkit</h2>'
-    +     '<p style="color:var(--dim)">Explore our growing repository of preconfigured security tools.</p>'
-    +     '<a href="#/tools" class="btn btn-accent" style="margin-top:16px">EXPLORE TOOLS DIRECTORY →</a>'
-    +   '</div>'
-    + '</section>';
+    + '</div>';
 }
 
 function pageTools() {
     return ''
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<h1 class="page-title">Tools</h1>'
-    +     '<p class="page-subtitle">Vortex Linux security toolkit — coming soon.</p>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section reveal">'
-    +   '<div class="container">'
-    +     '<div class="notice" style="border-color:var(--accent)">'
-    +       '<strong>Currently in development.</strong> Vortex Linux does not yet ship with any preinstalled tools. '
-    +       'We are still in early development and the security toolkit will be added as the project matures. '
-    +       'Check back here as things progress.'
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title"><h1>Tools</h1> <h2>Hacking Tools List</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Tools</li></ol>'
+    +     '</div>'
+    +     '<div class="panel panel-default text-left">'
+    +       '<div class="panel-heading"><b>Information</b></div>'
+    +       '<div class="list-group-item">'
+    +         '<p>Every tool of the Vortex Linux toolkit is listed in the following table. If you don\'t find the tool you need, simply open an <a href="https://github.com/Copper-linux/copper/issues/new" target="_blank">issue</a> or better do a <a href="https://github.com/Copper-linux/copper/pulls" target="_blank">pull request</a> for the tool you want to be in our repository.</p>'
+    +         '<p><span class="blyellow">Still in development:</span> neither Copper Linux nor Vortex Linux are available yet, so this tools list is still in development too.</p>'
+    +         '<p><b>Tool count:</b> <a href="#/tools"><span id="tool-count">0</span></a>'
+    +         '<input type="text" id="searchTools" onkeyup="searchTools()" placeholder="Input tool name" title="Type in a name"></p>'
+    +       '</div>'
+    +     '</div>'
+    +     '<div class="panel panel-default text-left">'
+    +       '<div class="panel-heading"><b>Copper / Vortex Complete Tools List</b></div>'
+    +       '<div class="list-group-item">'
+    +         '<table id="tbl-minimalist">'
+    +           '<thead>'
+    +             '<tr id="idx-tool">'
+    +               '<th class="tbl-name">Name</th>'
+    +               '<th class="tbl-version">Status</th>'
+    +               '<th class="tbl-description">Description</th>'
+    +               '<th class="tbl-categorie">Category</th>'
+    +               '<th class="tbl-homepage">Website</th>'
+    +             '</tr>'
+    +           '</thead>'
+    +           '<tbody id="tools-tbody">'
+    +             '<tr><td colspan="5" class="tbl-name">Loading tools…</td></tr>'
+    +           '</tbody>'
+    +         '</table>'
+    +       '</div>'
     +     '</div>'
     +   '</div>'
-    + '</section>'
-
-    + '<section class="section">'
-    +   '<div class="container text-center">'
-    +     '<div class="terminal-block" style="max-width:480px;margin:0 auto;text-align:left">'
-    +       '$ vortex --tools list<br>'
-    +       'No tools installed yet.<br>'
-    +       'Status: In Development<br>'
-    +       'ETA:    Unknown'
-    +     '</div>'
-    +     '<p style="color:var(--dim);margin-top:24px;font-size:0.9rem">Want to help? Contribute by packaging tools via a pull request.</p>'
-    +     '<div class="btn-group" style="justify-content:center;margin-top:20px">'
-    +       '<a href="https://github.com/Copper-Linux" target="_blank" class="btn btn-accent">GITHUB →</a>'
-    +       '<a href="#/contributions" class="btn">HOW TO CONTRIBUTE</a>'
-    +     '</div>'
-    +   '</div>'
-    + '</section>';
+    + '</div>';
 }
 
 function pageContributions() {
     return ''
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<h1 class="page-title">Contribute</h1>'
-    +     '<p class="page-subtitle">Copper Linux is developed by a small team, and contributions help the project grow.</p>'
-    +   '</div>'
-    + '</section>'
-
-    + '<section class="section">'
-    +   '<div class="container grid-2 stagger">'
-    +     '<div class="card"><h3>Ways to Contribute</h3>'
-    +       '<ul class="bullet-list" style="color:var(--dim)">'
-    +         '<li><strong style="color:var(--white)">Code</strong> — Fix bugs, improve core utilities.</li>'
-    +         '<li><strong style="color:var(--white)">Bug Reports</strong> — Find something broken? Let us know.</li>'
-    +         '<li><strong style="color:var(--white)">Testing</strong> — Help test ISOs on different hardware.</li>'
-    +         '<li><strong style="color:var(--white)">Documentation</strong> — Write guides and tutorials.</li>'
-    +         '<li><strong style="color:var(--white)">Package Work</strong> — Maintain packages in the repo.</li>'
-    +         '<li><strong style="color:var(--white)">UI/Design</strong> — Improve the desktop experience.</li>'
-    +         '<li><strong style="color:var(--white)">Security Testing</strong> — Audit the system.</li>'
-    +         '<li><strong style="color:var(--white)">Tool Packaging</strong> — Add tools to Vortex via <code>tools.json</code>.</li>'
-    +       '</ul>'
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title"><h1>Contribute</h1> <h2>How To Help</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Contribute</li></ol>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Ways to Contribute</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<ul class="list-group">'
+    +             '<li class="list-group-item"><i class="fas fa-code" style="color:#4BA6E7;margin-right:8px"></i><b>Code</b> &mdash; Fix bugs, improve core utilities.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#4BA6E7;margin-right:8px"></i><b>Bug Reports</b> &mdash; Find something broken? Let us know.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-flask" style="color:#4BA6E7;margin-right:8px"></i><b>Testing</b> &mdash; Help test ISOs on different hardware.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-book" style="color:#4BA6E7;margin-right:8px"></i><b>Documentation</b> &mdash; Write guides and tutorials.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-cube" style="color:#4BA6E7;margin-right:8px"></i><b>Package Work</b> &mdash; Maintain packages in the repo.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-paint-brush" style="color:#4BA6E7;margin-right:8px"></i><b>UI/Design</b> &mdash; Improve the desktop experience.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-shield-alt" style="color:#4BA6E7;margin-right:8px"></i><b>Security Testing</b> &mdash; Audit the system.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-wrench" style="color:#4BA6E7;margin-right:8px"></i><b>Tool Packaging</b> &mdash; Add tools to Vortex via <code>tools.json</code>.</li>'
+    +           '</ul>'
+    +         '</div>'
+    +       '</div>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Workflow</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<ol class="list-group">'
+    +             '<li class="list-group-item"><span class="blgreen">1</span>&nbsp; Fork the repository</li>'
+    +             '<li class="list-group-item"><span class="blgreen">2</span>&nbsp; Create a branch</li>'
+    +             '<li class="list-group-item"><span class="blgreen">3</span>&nbsp; Make your changes</li>'
+    +             '<li class="list-group-item"><span class="blgreen">4</span>&nbsp; Test them locally</li>'
+    +             '<li class="list-group-item"><span class="blgreen">5</span>&nbsp; Open a pull request</li>'
+    +           '</ol>'
+    +           '<p>Adding a new tool to Vortex means adding an entry to <code>tools.json</code> — no HTML changes needed.</p>'
+    +         '</div>'
+    +       '</div>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Get Started</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">GitHub Repository</a> '
+    +           '<a href="#/track" class="btn btn-default">Track Development</a>'
+    +         '</div>'
+    +       '</div>'
     +     '</div>'
-    +     '<div class="card"><h3>Workflow</h3>'
-    +       '<ol class="step-list">'
-    +         '<li>Fork the repository</li>'
-    +         '<li>Create a branch</li>'
-    +         '<li>Make your changes</li>'
-    +         '<li>Test them locally</li>'
-    +         '<li>Open a pull request</li>'
-    +       '</ol>'
-    +       '<p style="color:var(--dim);font-size:0.85rem;margin-top:16px">Adding a new tool to Vortex means adding an entry to <code>tools.json</code> — no HTML changes needed.</p>'
-    +     '</div>'
     +   '</div>'
-    + '</section>'
-
-    + '<section class="section text-center reveal">'
-    +   '<div class="container">'
-    +     '<div class="btn-group" style="justify-content:center">'
-    +       '<a href="https://github.com/Copper-Linux" target="_blank" class="btn">GITHUB REPOSITORY</a>'
-    +       '<a href="#" class="btn btn-accent">REPORT A BUG</a>'
-    +       '<a href="#/docs" class="btn">DOCUMENTATION</a>'
-    +     '</div>'
-    +   '</div>'
-    + '</section>';
+    + '</div>';
 }
 
 function pageContributors() {
     return ''
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<h1 class="page-title">Team</h1>'
-    +     '<p class="page-subtitle">Meet the four humans building Copper Linux and Vortex Linux.</p>'
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title"><h1>Team</h1> <h2>Contributors</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Team</li></ol>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Developers</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>Copper Linux is built by a small team of volunteers.</p>'
+    +           teamTable()
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
     +   '</div>'
-    + '</section>'
-
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<div id="contrib-grid" class="grid-2 stagger"><p style="color:var(--dim)">Fetching from GitHub API…</p></div>'
-    +   '</div>'
-    + '</section>';
+    + '</div>';
 }
 
-function pageDocs() {
-    var sections = [
-        { title: 'Installation', items: ['System Requirements', 'Creating Bootable Media', 'Installation Walkthrough'] },
-        { title: 'Getting Started', items: ['Initial Setup', 'Connecting to Wi-Fi', 'Desktop Usage Basics'] },
-        { title: 'Package Management', items: ['Installing Software', 'Updating the System', 'Removing Packages'] },
-        { title: 'Vortex Linux', items: ['Security Mode Overview', 'Tool Directory Guide', 'Network Config for Labs'] },
-        { title: 'Troubleshooting', items: ['Common Boot Issues', 'Audio / Video Drivers', 'Bug Reporting Guidelines'] },
-        { title: 'Development', items: ['Building from Source', 'Packaging Guidelines', 'Contributing Guide'] },
-    ];
-
-    var cards = sections.map(function(s) {
-        var lis = s.items.map(function(i) { return '<li><a href="#">' + i + '</a></li>'; }).join('');
-        return '<div class="card"><h3>' + s.title + '</h3><ul class="link-list">' + lis + '</ul></div>';
-    }).join('');
-
+function pageTrack() {
     return ''
-    + '<section class="section">'
-    +   '<div class="container">'
-    +     '<h1 class="page-title">Documentation</h1>'
-    +     '<p class="page-subtitle">Guides, manuals, and references for Copper Linux.</p>'
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title"><h1>Track</h1> <h2>Recent Commits</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Track</li></ol>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Live Development Feed</b>'
+    +           ' <button type="button" id="track-refresh" class="btn btn-default btn-xs">Refresh now</button>'
+    +         '</div>'
+    +         '<div class="list-group-item">'
+    +           '<div class="info"><p><i class="fas fa-sync-alt"></i> Auto-refreshes every minute. Shows the latest commits pushed to the Copper Linux repositories on GitHub.</p></div>'
+    +           '<div id="track-status" class="track-status"></div>'
+    +           '<div id="track-feeds"></div>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
     +   '</div>'
-    + '</section>'
-    + '<section class="section">'
-    +   '<div class="container grid-2 stagger">' + cards + '</div>'
-    + '</section>';
+    + '</div>';
 }
 
 function page404() {
     return ''
-    + '<section class="section text-center" style="min-height:60vh;display:flex;align-items:center">'
-    +   '<div class="container">'
-    +     '<h1 class="page-title" style="font-size:8rem;color:var(--accent)">404</h1>'
-    +     '<p class="page-subtitle">Page not found.</p>'
-    +     '<a href="#/" class="btn btn-accent">RETURN HOME</a>'
+    + '<div class="container">'
+    +   '<div class="row">'
+    +     '<div class="col-lg-12">'
+    +       '<div class="page-header page-header-title"><h1>404</h1> <h2>Lost?</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">404</li></ol>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Error</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>idk what youre searching for but it inst here</p>'
+    +           '<p class="dim-text">The page you typed in (or followed a link to) doesn&rsquo;t exist on this site.</p>'
+    +           '<a href="#/" class="btn btn-default">Return Home</a>'
+    +         '</div>'
+    +       '</div>'
+    +     '</div>'
     +   '</div>'
-    + '</section>';
+    + '</div>';
+}
+
+/* ------------------------------------------------------------------
+   SHARED FRAGMENTS
+   ------------------------------------------------------------------ */
+function teamTable() {
+    return '<table id="developers">'
+        + '<thead><tr>'
+        +   '<th><b>Avatar</b></th><th><b>Name</b></th><th><b>Nickname</b></th><th><b>GitHub</b></th><th><b>Role</b></th>'
+        + '</tr></thead>'
+        + '<tbody id="team-tbody"><tr><td colspan="5" class="tbl-name">Loading team…</td></tr></tbody>'
+        + '</table>';
+}
+
+function terminalBlock(title, bootLine, hintLine, prompt) {
+    return '<div class="terminal-window">'
+        + '<div class="terminal-titlebar"><span>tty0</span><span>' + escHtml(title || '') + '</span></div>'
+        + '<div class="terminal-body" id="term-body">'
+        +   '<div class="terminal-line sys">' + escHtml(bootLine) + '</div>'
+        +   '<div class="terminal-line sys">' + escHtml(hintLine) + '</div>'
+        + '</div>'
+        + '<div class="terminal-input-row">'
+        +   '<span class="terminal-prompt">' + (prompt || '$') + '</span>'
+        +   '<input type="text" id="term-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="type a command...">'
+        + '</div>'
+        + '</div>';
 }
