@@ -276,7 +276,7 @@ async function ghGet(path) {
 /* the three of us + avatars from github (initials if the api is down) */
 var TEAM = [
     { login: 'farcrowx',                  role: 'Managing github, social accounts-supporter' },
-    { login: '12hrforma',                role: 'Built Vortex linux-The Honored One' },
+    { login: '12hrformat',                role: 'Built Vortex linux-The Honored One' },
     { login: 'krishnarajyagru27-creator', role: 'Built the core system of Copper linux-Developer' },
 ];
 
