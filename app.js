@@ -57,14 +57,11 @@ function setActiveNav(hash) {
     if (id) $('#' + id).addClass('active');
 }
 
-/* both editions share one black/yellow theme; this flag only tells the
-   mode switch which page it is currently on */
+/* both editions share one black/yellow theme; body.deadlight only adds a
+   small "you are here" cue on the security pages */
 function syncTheme(hash) {
     var isDeadlight = (hash === '/security' || hash === '/tools');
     document.body.classList.toggle('deadlight', isDeadlight);
-    $('#mode-copper').toggleClass('active', !isDeadlight);
-    $('#mode-deadlight').toggleClass('active', isDeadlight);
-    $('#mode-current').text(isDeadlight ? 'Deadlight' : 'Copper');
 }
 
 /* the mobile menu should never stay open over the page you just opened */
