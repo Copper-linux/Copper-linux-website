@@ -68,7 +68,6 @@ function syncTheme(hash) {
 /* page specific stuff to run after it renders */
 function bindPageInteractions(hash) {
     if (hash === '/') loadReleases();
-    if (hash === '/daily-driving' || hash === '/security') initTerminal();
     if (hash === '/tools') loadToolsData();
     if (hash === '/contributors') renderTeam();
     if (hash === '/track') {
@@ -89,7 +88,7 @@ function initReveal() {
         '#app .hero-copy > *,' +
         '#app .stat-strip, #app .section-head, #app .edition-card,' +
         '#app .release-card, #app .panel, #app .page-header-title,' +
-        '#app .breadcrumb, #app .terminal-window'
+        '#app .breadcrumb, #app .contribute-band'
     );
     var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     var pending = [];
@@ -114,91 +113,9 @@ function initReveal() {
 
     pending.forEach(function (el, i) {
         el.classList.add('reveal');
-        el.style.transitionDelay = ((i % 4) * 70) + 'ms';
+        el.style.transitionDelay = ((i % 4) * 45) + 'ms';
         revealObserver.observe(el);
     });
-}
-
-/* fake terminal for the daily/deadlight pages, type "help" to see commands */
-var TERM_COMMANDS = {
-    help: [
-        'Available commands:',
-        '  help       Show this message',
-        '  about      About Copper Linux',
-        '  version    Display version info',
-        '  team       List contributors',
-        '  deadlight  About Deadlight Linux',
-        '  neofetch   System info',
-        '  clear      Clear terminal',
-    ],
-    about: [
-        'Copper Linux — The Foundation.',
-        'A minimal, practical Linux distribution built',
-        'by a small team of three people.',
-    ],
-    version: [
-        'Copper Linux v0.2.0 (pre-release)',
-        'Arch:     x86_64',
-        'Status:   In development',
-        'Releases: github.com/Copper-linux/copper',
-    ],
-    team: [
-        'TEAM:',
-        '  Firstspot7  — Developer',
-        '  12hrformat  — Core system & Deadlight Linux',
-        '  farcrowx    — GitHub & community',
-    ],
-    deadlight: [
-        'Deadlight Linux — Security Edition',
-        'Cybersecurity-focused reskin of Copper Linux.',
-        'Preinstalled tools are planned for pentesting, CTFs, and research.',
-        'WARNING: Only use on systems you own or have permission to test.',
-    ],
-    neofetch: [
-        '         OS:     Copper Linux',
-        '         Kernel: copper-custom',
-        '         Shell:  zsh',
-        '         DE:     TBD',
-        '         RAM:    whatever you have',
-        '         Team:   3 contributors',
-        '         Status: In development',
-    ],
-};
-
-function initTerminal() {
-    var input = document.getElementById('term-input');
-    var body  = document.getElementById('term-body');
-    if (!input || !body) return;
-
-    var wrapper = document.querySelector('.terminal-window');
-    if (wrapper) wrapper.addEventListener('click', function () { input.focus(); });
-
-    input.addEventListener('keydown', function (e) {
-        if (e.key !== 'Enter') return;
-        var raw = input.value.trim();
-        var cmd = raw.toLowerCase();
-        if (!raw) return;
-
-        addLine('$ ' + raw, 'cmd');
-
-        if (cmd === 'clear') {
-            body.innerHTML = '';
-        } else if (TERM_COMMANDS[cmd]) {
-            TERM_COMMANDS[cmd].forEach(function (l) { addLine(l); });
-        } else {
-            addLine('copper: command not found: ' + raw, 'err');
-        }
-
-        input.value = '';
-        body.scrollTop = body.scrollHeight;
-    });
-
-    function addLine(text, cls) {
-        var d = document.createElement('div');
-        d.className = 'terminal-line' + (cls ? ' ' + cls : '');
-        d.textContent = text;
-        body.appendChild(d);
-    }
 }
 
 /* ------------------------------------------------------------------
@@ -371,8 +288,8 @@ function releaseCard(r) {
 /* the three of us + avatars from github (initials if the api is down) */
 var TEAM = [
     { login: 'Firstspot7', role: 'Developer' },
-    { login: '12hrformat', role: 'Built the core system & Deadlight Linux - Developer' },
-    { login: 'farcrowx',   role: 'Managing GitHub & social accounts - Supporter' },
+    { login: '12hrformat', role: 'Leader' },
+    { login: 'farcrowx',   role: 'Developer' },
 ];
 
 var AVATAR_CACHE = {};
@@ -552,14 +469,14 @@ function pageHome() {
     +     '<div class="hero-copy">'
     +       '<p class="hero-kicker"><span class="kicker-dot"></span>Open source &middot; in development &middot; x86_64</p>'
     +       '<h1 class="hero-title">Copper<br /><span class="hero-title-accent">Linux</span></h1>'
-    +       '<p class="hero-sub">A small, practical distribution built by three people &mdash; plus a security edition called <a href="#/security">Deadlight</a>. Nothing to download yet, and we are not going to pretend otherwise.</p>'
+    +       '<p class="hero-sub">A small, practical distribution built by three people &mdash; plus a security edition called <a href="#/security">Deadlight</a>. Pre-releases are on GitHub; a stable ISO is not, and we are not going to pretend otherwise.</p>'
     +       '<div class="hero-actions">'
     +         '<a class="btn btn-hero" href="https://github.com/Copper-linux/copper" target="_blank"><i class="fab fa-github"></i> View on GitHub</a>'
     +         '<a class="btn btn-hero-ghost" href="#/daily-driving">Explore editions</a>'
     +       '</div>'
     +       '<div class="hero-meta">'
     +         '<span class="hero-chip">Latest release: <a id="hero-release" href="https://github.com/Copper-linux/copper/releases" target="_blank">checking&hellip;</a></span>'
-    +         '<span class="hero-chip hero-chip-dim">No ISO yet</span>'
+    +         '<span class="hero-chip hero-chip-dim">Security edition: Deadlight</span>'
     +       '</div>'
     +     '</div>'
     +   '</div>'
@@ -571,7 +488,7 @@ function pageHome() {
     +   '<div class="stat-strip">'
     +     '<div class="stat"><span class="stat-num">3</span><span class="stat-label">Contributors</span></div>'
     +     '<div class="stat"><span class="stat-num" id="stat-releases">&mdash;</span><span class="stat-label">GitHub releases</span></div>'
-    +     '<div class="stat"><span class="stat-num">0</span><span class="stat-label">ISOs to download</span></div>'
+    +     '<div class="stat"><span class="stat-num">x86_64</span><span class="stat-label">Architecture</span></div>'
     +   '</div>'
 
     /* editions */
@@ -582,7 +499,6 @@ function pageHome() {
     +         '<p class="edition-kicker">Daily driving</p>'
     +         '<h3>Copper</h3>'
     +         '<p>A plain desktop for getting real work done: school, code, media, the boring stuff that matters.</p>'
-    +         '<div class="code-block"><p class="command">copper --status</p><p>Still in development &mdash; not available yet.</p></div>'
     +         '<a href="#/daily-driving" class="btn btn-default">Daily driving mode &rarr;</a>'
     +       '</article>'
     +     '</div>'
@@ -591,7 +507,6 @@ function pageHome() {
     +         '<p class="edition-kicker">Security edition</p>'
     +         '<h3>Deadlight</h3>'
     +         '<p>Copper rebuilt for security work: pentesting, CTFs, lab boxes. The toolkit gets assembled as we go.</p>'
-    +         '<div class="code-block"><p class="command">deadlight --tools list</p><p>Not available yet &mdash; still in development.</p></div>'
     +         '<a href="#/security" class="btn btn-default">Security mode &rarr;</a>'
     +       '</article>'
     +     '</div>'
@@ -606,11 +521,26 @@ function pageHome() {
     +   '<div class="panel panel-default text-left">'
     +     '<div class="panel-heading"><b>Project status</b></div>'
     +     '<div class="list-group-item">'
-    +       '<p>Copper Linux is a distro three people are putting together because nothing else quite fit. Early days: nothing to download yet, plenty of rough edges.</p>'
+    +       '<p>Copper Linux is a distro three people are putting together because nothing else quite fit. Early days: plenty of rough edges, and the pre-releases are the honest snapshot of where we are.</p>'
     +       '<p>Something broken or missing? Open an issue on the <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub repo</a>, or fix it yourself and send a pull request.</p>'
-    +       '<p>Status: <span class="blyellow">Still in development</span> &mdash; neither Copper nor Deadlight is installable yet.</p>'
     +     '</div>'
     +   '</div>'
+
+    /* contribute band — the honest call to action */
+    +   '<section class="contribute-band">'
+    +     '<p class="band-kicker">Contribute</p>'
+    +     '<h2>Help us build it</h2>'
+    +     '<p class="band-sub">There is no stable ISO yet, but every pre-release is up on GitHub. Download one, break it, then report what went wrong &mdash; or fix it yourself.</p>'
+    +     '<div class="contribute-steps">'
+    +       '<div class="step"><span class="step-num">1</span><h3>Download a pre-release</h3><p>The source for every pre-release sits on the releases page.</p></div>'
+    +       '<div class="step"><span class="step-num">2</span><h3>Boot it and break it</h3><p>Run it on real hardware and write down everything that misbehaves.</p></div>'
+    +       '<div class="step"><span class="step-num">3</span><h3>Report it or fix it</h3><p>Open an issue with what you found, or send a pull request.</p></div>'
+    +     '</div>'
+    +     '<div class="band-actions">'
+    +       '<a class="btn btn-band" href="https://github.com/Copper-linux/copper/releases" target="_blank">Download a pre-release</a>'
+    +       '<a class="btn btn-band-ghost" href="#/contributions">How to contribute</a>'
+    +     '</div>'
+    +   '</section>'
     + '</div>';
 }
 
@@ -653,23 +583,15 @@ function pageDaily() {
     +         '</div>'
     +       '</div>'
     +     '</div>'
-    +     '<div class="col-lg-12"><h2 class="page-header">Try It</h2></div>'
-    +     '<div class="col-lg-12">'
-    +       '<div class="panel panel-default text-left">'
-    +         '<div class="panel-heading"><b>tty0 &mdash; copper@copper</b></div>'
-    +         '<div class="list-group-item">'
-    +           terminalBlock('copper@copper', 'Copper Linux — development build', 'Type "help" for available commands.', '$')
-    +         '</div>'
-    +       '</div>'
-    +     '</div>'
-    +     '<div class="col-lg-12"><h2 class="page-header">Downloads</h2></div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Get It</h2></div>'
     +     '<div class="col-lg-12">'
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>Download Copper Linux</b></div>'
     +         '<div class="list-group-item">'
-    +           '<div class="info" style="border-color:#ffd400"><p><i class="fas fa-exclamation-triangle"></i> <b>Still in development.</b> No ISOs yet — there is literally nothing to download.</p></div>'
-    +           '<div class="code-block"><p class="command">copper --status</p><p>Copper Linux</p><p>Status:   still in development</p><p>Downloads: not available yet</p></div>'
-    +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">View on GitHub</a>'
+    +           '<p>There is no stable ISO yet &mdash; no point pretending otherwise. What is out there: pre-releases on GitHub, published as source. Grab one, build it, and tell us what breaks.</p>'
+    +           '<a href="https://github.com/Copper-linux/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
+    +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">GitHub Repository</a>'
+    +           '<p>News and screenshots land on Instagram: <a href="https://instagram.com/copperlinux" target="_blank">@copperlinux</a>.</p>'
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -706,22 +628,16 @@ function pageSecurity() {
     +         '</div>'
     +       '</div>'
     +     '</div>'
-    +     '<div class="col-lg-12"><h2 class="page-header">Terminal</h2></div>'
+    +     '<div class="col-lg-12"><h2 class="page-header">Right Now</h2></div>'
     +     '<div class="col-lg-12">'
     +       '<div class="panel panel-default text-left">'
-    +         '<div class="panel-heading"><b>tty0 &mdash; root@deadlight</b></div>'
+    +         '<div class="panel-heading"><b>Status</b></div>'
     +         '<div class="list-group-item">'
-    +           terminalBlock('root@deadlight', 'Deadlight Linux (Copper Security Edition)', 'Type "help" for available commands.', '#')
-    +         '</div>'
-    +       '</div>'
-    +     '</div>'
-    +     '<div class="col-lg-12"><h2 class="page-header">Included Toolkit</h2></div>'
-    +     '<div class="col-lg-12">'
-    +       '<div class="panel panel-default text-left">'
-    +         '<div class="panel-heading"><b>Tools</b></div>'
-    +         '<div class="list-group-item">'
-    +           '<p>Deadlight isn\'t available yet. The preconfigured toolkit gets filled in as we build the thing &mdash; no ETA, check back when we say so.</p>'
-    +           '<a href="#/tools" class="btn btn-default">Tools Directory &rarr;</a>'
+    +           '<p>Deadlight has no image to download yet. The edition is being assembled on the <b>main</b> branch: the reskin lands first, the toolkit fills in behind it.</p>'
+    +           '<p>Watch it happen on <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub</a>, see the planned tools in the <a href="#/tools">tools directory</a>, or start from a Copper pre-release.</p>'
+    +           '<a href="https://github.com/Copper-linux/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
+    +           '<a href="#/tools" class="btn btn-default">Tools Directory</a>'
+    +           '<p>Deadlight updates get posted on Instagram: <a href="https://instagram.com/deadlightlinux" target="_blank">@deadlightlinux</a>.</p>'
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -740,7 +656,8 @@ function pageTools() {
     +     '<div class="panel panel-default text-left">'
     +       '<div class="panel-heading"><b>Information</b></div>'
     +       '<div class="list-group-item">'
-    +         '<p>Every tool in the Deadlight toolkit lands in the table below. Missing one? Open an <a href="https://github.com/Copper-linux/copper/issues/new" target="_blank">issue</a>, or PR it yourself into <code>tools.json</code>.</p>'
+    +         '<p>Every tool in the Deadlight toolkit lands in the table below.</p>'
+    +         '<p><b>Want to submit a tool?</b> Open an <a href="https://github.com/Copper-linux/copper/issues/new" target="_blank">issue</a> or a <a href="https://github.com/Copper-linux/copper/pulls" target="_blank">pull request</a> &mdash; entries live in <code>tools.json</code>, no HTML surgery required.</p>'
     +         '<p><span class="blyellow">Still in development:</span> no tools shipped yet, so this list is mostly empty. It fills in as Deadlight comes together.</p>'
     +         '<p><b>Tool count:</b> <a href="#/tools"><span id="tool-count">0</span></a>'
     +         '<input type="text" id="searchTools" onkeyup="searchTools()" placeholder="Input tool name" title="Type in a name"></p>'
@@ -782,7 +699,7 @@ function pageContributions() {
     +           '<ul class="list-group">'
     +             '<li class="list-group-item"><i class="fas fa-code" style="color:#ffd400;margin-right:8px"></i><b>Code</b> &mdash; find a bug and fix it. Core utilities especially.</li>'
     +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#ffd400;margin-right:8px"></i><b>Bug Reports</b> &mdash; something broke? tell us exactly what you did.</li>'
-    +             '<li class="list-group-item"><i class="fas fa-flask" style="color:#ffd400;margin-right:8px"></i><b>Testing</b> &mdash; flash a test ISO on weird hardware, report what explodes.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-flask" style="color:#ffd400;margin-right:8px"></i><b>Testing</b> &mdash; build a pre-release, boot it on weird hardware, report what explodes.</li>'
     +             '<li class="list-group-item"><i class="fas fa-wrench" style="color:#ffd400;margin-right:8px"></i><b>Tools</b> &mdash; help fill <code>tools.json</code> as Deadlight comes together.</li>'
     +           '</ul>'
     +         '</div>'
@@ -804,6 +721,7 @@ function pageContributions() {
     +         '<div class="panel-heading"><b>Get Started</b></div>'
     +         '<div class="list-group-item">'
     +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">GitHub Repository</a> '
+    +           '<a href="https://github.com/Copper-linux/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
     +           '<a href="#/track" class="btn btn-default">Track Development</a>'
     +         '</div>'
     +       '</div>'
@@ -824,6 +742,12 @@ function pageContributors() {
     +         '<div class="list-group-item">'
     +           '<p>Copper Linux is built by exactly the three people below. Be nice to them.</p>'
     +           teamTable()
+    +         '</div>'
+    +       '</div>'
+    +       '<div class="panel panel-default text-left">'
+    +         '<div class="panel-heading"><b>Socials</b></div>'
+    +         '<div class="list-group-item">'
+    +           '<p>Instagram &mdash; Copper Linux: <a href="https://instagram.com/copperlinux" target="_blank">@copperlinux</a> &middot; Deadlight Linux: <a href="https://instagram.com/deadlightlinux" target="_blank">@deadlightlinux</a></p>'
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -884,16 +808,3 @@ function teamTable() {
         + '</table>';
 }
 
-function terminalBlock(title, bootLine, hintLine, prompt) {
-    return '<div class="terminal-window">'
-        + '<div class="terminal-titlebar"><span>tty0</span><span>' + escHtml(title || '') + '</span></div>'
-        + '<div class="terminal-body" id="term-body">'
-        +   '<div class="terminal-line sys">' + escHtml(bootLine) + '</div>'
-        +   '<div class="terminal-line sys">' + escHtml(hintLine) + '</div>'
-        + '</div>'
-        + '<div class="terminal-input-row">'
-        +   '<span class="terminal-prompt">' + (prompt || '$') + '</span>'
-        +   '<input type="text" id="term-input" class="terminal-input" autocomplete="off" spellcheck="false" placeholder="type a command...">'
-        + '</div>'
-        + '</div>';
-}

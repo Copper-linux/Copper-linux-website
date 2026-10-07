@@ -28,6 +28,7 @@
 	--font-body:  'Space Grotesk', system-ui, sans-serif;
 	--font-mono:  'IBM Plex Mono', 'Courier New', monospace;
 	--font-brand: 'JetBrains Mono', 'IBM Plex Mono', monospace;
+	--font-display: 'Cinzel Decorative', 'Space Grotesk', Georgia, serif;
 
 	--ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
@@ -229,6 +230,41 @@ input:focus-visible,
 	font-weight: 600;
 }
 
+/* The mode buttons are `li > a` as well, so the generic navbar link rules
+   (17px padding, dim colour) also hit them: the active pill balloons out of
+   the 56px bar and the two buttons render at different sizes. These restore
+   the compact pill and beat every navbar/media-query rule by specificity. */
+.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	font-weight: 400;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	line-height: 1.6;
+	white-space: nowrap;
+	color: var(--dim);
+	background: transparent;
+	padding: 2px 7px;
+	margin: 0;
+	box-shadow: none;
+}
+
+.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn:hover,
+.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn:focus {
+	color: var(--yl);
+	background: transparent;
+	box-shadow: none;
+}
+
+.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn.active,
+.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn.active:hover,
+.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn.active:focus {
+	color: #0a0a0a;
+	background: var(--yl);
+	font-weight: 600;
+	box-shadow: none;
+}
+
 /* Both editions live in the same theme; this only adds a small cue
    on the security pages so the mode switch reads as "you are here". */
 body.deadlight .page-header-title {
@@ -248,16 +284,18 @@ body.deadlight .page-header-title {
 }
 
 /* faint engineering grid behind the headline */
+/* Grid is painted directly and faded with a gradient layer instead of a
+   mask — masked layers get re-rasterised while scrolling and that shows
+   up as lag. */
 .hero::before {
 	content: '';
 	position: absolute;
 	inset: 0;
 	background-image:
 		linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
-		linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
-	background-size: 56px 56px;
-	-webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 80%);
-	mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 80%);
+		linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+		linear-gradient(180deg, rgba(10, 10, 10, 0) 55%, #0a0a0a 100%);
+	background-size: 56px 56px, 56px 56px, 100% 100%;
 	pointer-events: none;
 }
 
@@ -289,10 +327,11 @@ body.deadlight .page-header-title {
 
 .hero-title {
 	margin: 22px 0 26px;
+	font-family: var(--font-display);
 	font-weight: 700;
 	font-size: clamp(3.4rem, 13vw, 9.5rem);
 	line-height: 0.92;
-	letter-spacing: -0.03em;
+	letter-spacing: -0.01em;
 	text-transform: uppercase;
 	color: #fff;
 }
@@ -367,10 +406,11 @@ body.deadlight .page-header-title {
 
 .stat-num {
 	display: block;
+	font-family: var(--font-display);
 	font-size: clamp(2.6rem, 5vw, 4rem);
 	font-weight: 700;
 	line-height: 1;
-	letter-spacing: -0.02em;
+	letter-spacing: 0;
 	color: var(--yl);
 }
 
@@ -393,10 +433,11 @@ body.deadlight .page-header-title {
 
 .section-head h2 {
 	margin: 0;
+	font-family: var(--font-display);
 	font-size: clamp(1.9rem, 3.6vw, 2.9rem);
 	font-weight: 700;
 	text-transform: uppercase;
-	letter-spacing: -0.01em;
+	letter-spacing: 0;
 	line-height: 1.05;
 	color: #fff;
 }
@@ -461,20 +502,17 @@ body.deadlight .page-header-title {
 
 .edition-card h3 {
 	margin: 12px 0 14px;
+	font-family: var(--font-display);
 	font-size: clamp(2rem, 4vw, 2.8rem);
 	font-weight: 700;
 	text-transform: uppercase;
-	letter-spacing: -0.01em;
+	letter-spacing: 0;
 	line-height: 1;
 	color: #fff;
 }
 
 .edition-card > p:not(.edition-kicker) {
 	color: var(--soft);
-}
-
-.edition-card .code-block {
-	margin-bottom: 22px;
 }
 
 /* ==========================================================================
@@ -503,10 +541,10 @@ body.deadlight .page-header-title {
 .release-version {
 	align-self: flex-start;
 	flex: 0 0 auto;
-	font-family: var(--font-mono);
+	font-family: var(--font-display);
 	font-weight: 700;
 	font-size: clamp(1.4rem, 3vw, 2.1rem);
-	letter-spacing: -0.02em;
+	letter-spacing: 0.02em;
 	color: var(--yl);
 	background: #0a0a0a;
 	border: 1px solid var(--line);
@@ -578,10 +616,11 @@ body.deadlight .page-header-title {
 	margin: 44px 0 20px;
 	padding-bottom: 12px;
 	border-bottom: 1px solid var(--line);
+	font-family: var(--font-display);
 	font-size: clamp(1.7rem, 3.2vw, 2.4rem);
 	font-weight: 700;
 	text-transform: uppercase;
-	letter-spacing: -0.01em;
+	letter-spacing: 0;
 	line-height: 1.15;
 	color: #fff;
 }
@@ -595,9 +634,10 @@ body.deadlight .page-header-title {
 .page-header-title h1 {
 	display: block;
 	margin: 0;
+	font-family: var(--font-display);
 	font-weight: 700;
 	font-size: clamp(2.6rem, 6vw, 4.2rem);
-	letter-spacing: -0.02em;
+	letter-spacing: -0.01em;
 	line-height: 1;
 	text-transform: uppercase;
 	color: var(--yl);
@@ -763,111 +803,136 @@ ul.list-group > li.list-group-item {
 }
 
 /* ==========================================================================
-   CODE BLOCKS + TERMINAL
+   CONTRIBUTE BAND (homepage call-out, inverted yellow)
    ========================================================================== */
-.code-block {
-	padding: 14px 16px;
-	margin: 14px 0 6px;
-	border: 1px solid var(--line);
-	background: #0a0a0a;
+.contribute-band {
+	position: relative;
+	margin: 8px 0 44px;
+	padding: clamp(30px, 5vw, 54px);
+	background: var(--yl);
+	color: #0a0a0a;
 	border-radius: 4px;
-	line-height: 1.6;
-	word-break: break-word;
-	word-wrap: break-word;
-	font-family: var(--font-mono);
-	font-size: 14px;
-}
-
-.code-block p:first-child { margin: 0; }
-
-.code-block p {
-	font-family: inherit;
-	font-size: inherit;
-	color: #b9b9b9;
-	margin: 6px 0 0 0;
-}
-
-.code-block .command {
-	color: #fff;
-}
-
-.code-block .command::before {
-	content: '$ ';
-	color: var(--yl);
-	font-weight: 600;
-}
-
-.terminal-window {
-	margin: 6px 0;
-	background: #0a0a0a;
-	border: 1px solid var(--line);
-	border-radius: 6px;
 	overflow: hidden;
 }
 
-.terminal-titlebar {
-	display: flex;
-	justify-content: space-between;
-	padding: 9px 14px;
-	background: var(--bg-sink);
-	border-bottom: 1px solid var(--line);
-	font-family: var(--font-mono);
-	font-size: 12.5px;
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	color: var(--dim);
-}
-
-.terminal-titlebar span:first-child::before {
+.contribute-band::after {
 	content: '';
-	display: inline-block;
-	width: 9px;
-	height: 9px;
-	border-radius: 50%;
-	background: var(--yl);
-	margin-right: 8px;
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(-45deg, rgba(10, 10, 10, 0.06) 0 12px, transparent 12px 24px);
+	pointer-events: none;
 }
 
-.terminal-body {
-	padding: 14px;
-	height: 260px;
-	overflow-y: auto;
+.contribute-band > * {
+	position: relative;
+	z-index: 1;
+}
+
+.band-kicker {
+	margin: 0;
 	font-family: var(--font-mono);
-	font-size: 14px;
-	line-height: 1.55;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.2em;
+	color: rgba(10, 10, 10, 0.65);
 }
 
-.terminal-line { color: var(--txt); }
-.terminal-line.cmd { color: var(--yl); font-weight: 500; }
-.terminal-line.err { color: var(--red); }
-.terminal-line.sys { color: var(--dim); }
+.contribute-band h2 {
+	margin: 14px 0 16px;
+	font-family: var(--font-display);
+	font-size: clamp(2.1rem, 5vw, 3.6rem);
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0;
+	line-height: 1.05;
+	color: #0a0a0a;
+}
 
-.terminal-input-row {
-	display: flex;
+.band-sub {
+	max-width: 760px;
+	margin: 0;
+	font-size: 18px;
+	color: rgba(10, 10, 10, 0.82);
+}
+
+.contribute-steps {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 18px;
+	margin: 34px 0 32px;
+}
+
+.step {
+	background: rgba(10, 10, 10, 0.06);
+	border: 1px solid rgba(10, 10, 10, 0.18);
+	border-radius: 4px;
+	padding: 22px;
+}
+
+.step-num {
+	display: inline-flex;
 	align-items: center;
-	padding: 0 14px 12px;
-}
-
-.terminal-prompt {
-	margin-right: 10px;
+	justify-content: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	background: #0a0a0a;
+	color: var(--yl);
 	font-family: var(--font-mono);
 	font-size: 14px;
 	font-weight: 700;
-	color: var(--yl);
+	margin-bottom: 14px;
 }
 
-.terminal-input {
-	flex: 1;
-	background: transparent;
-	border: none;
-	outline: none;
-	color: var(--txt);
+.step h3 {
+	margin: 0 0 8px;
 	font-family: var(--font-mono);
-	font-size: 14px;
+	font-size: 14.5px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+	color: #0a0a0a;
 }
 
-.terminal-input::placeholder {
-	color: #6a6a6a;
+.step p {
+	margin: 0;
+	font-size: 15.5px;
+	color: rgba(10, 10, 10, 0.78);
+}
+
+.band-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.btn-band {
+	color: var(--yl);
+	background: #0a0a0a;
+	border: 1px solid #0a0a0a;
+}
+
+.btn-band:hover,
+.btn-band:focus {
+	color: #0a0a0a;
+	background: transparent;
+	border-color: #0a0a0a;
+	transform: translateY(-2px);
+}
+
+.btn-band-ghost {
+	color: #0a0a0a;
+	background: transparent;
+	border: 1px solid rgba(10, 10, 10, 0.55);
+}
+
+.btn-band-ghost:hover,
+.btn-band-ghost:focus {
+	color: var(--yl);
+	background: #0a0a0a;
+	border-color: #0a0a0a;
+	transform: translateY(-2px);
 }
 
 /* ==========================================================================
@@ -1213,9 +1278,10 @@ code {
 
 .cl-footer-name {
 	margin-left: 10px;
+	font-family: var(--font-display);
 	color: #fff;
 	font-weight: 700;
-	letter-spacing: 3px;
+	letter-spacing: 2px;
 	font-size: 15px;
 	vertical-align: middle;
 }
@@ -1250,6 +1316,16 @@ code {
 	border-color: var(--yl);
 }
 
+.cl-footer-handles {
+	margin: 12px 0 0;
+	font-family: var(--font-mono);
+	font-size: 13px;
+	color: var(--dim);
+}
+
+.cl-footer-handles a { color: var(--dim); }
+.cl-footer-handles a:hover { color: var(--yl); }
+
 .cl-footer-bottom {
 	margin-top: 26px;
 	padding-top: 14px;
@@ -1269,13 +1345,24 @@ code {
    ========================================================================== */
 #app .reveal {
 	opacity: 0;
-	transform: translateY(26px);
-	transition: opacity 0.6s var(--ease), transform 0.6s var(--ease);
+	transform: translateY(16px);
+	transition: opacity 0.5s var(--ease), transform 0.5s var(--ease);
 }
 
 #app .reveal.is-visible {
 	opacity: 1;
 	transform: none;
+}
+
+/* Scope layout + painting to each block so scrolling only repaints the
+   piece that actually changed instead of the whole page. */
+.panel,
+.edition-card,
+.release-card,
+.stat-strip,
+.contribute-band,
+.hero {
+	contain: layout paint;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1322,8 +1409,10 @@ code {
 	body { font-size: 16px; }
 	.navbar-copper .navbar-nav > li > a { text-transform: none; }
 	.modeswitch { margin: 10px 0 10px 12px; }
-	.terminal-body { height: 220px; }
 	#searchTools { width: 100%; float: none; }
+
+	.contribute-steps { grid-template-columns: 1fr; }
+	.contribute-band { padding: 28px 22px; }
 
 	.stat-strip { grid-template-columns: 1fr; }
 	.stat { border-left: none; border-top: 1px solid var(--line); padding: 20px 22px; }
@@ -1345,4 +1434,16 @@ code {
 @media (max-width: 450px) {
 	#tbl-minimalist .tbl-description { display: none; }
 	.hazard-strip { height: 10px; }
+}
+
+/* touch screens: sticky hover-lifts read as glitching while scrolling */
+@media (hover: none) {
+	.release-card:hover,
+	.edition-card:hover,
+	.btn-hero:hover,
+	.btn-hero-ghost:hover,
+	.btn-band:hover,
+	.btn-band-ghost:hover {
+		transform: none;
+	}
 }
