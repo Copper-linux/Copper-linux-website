@@ -13,8 +13,8 @@ var ROUTES = {
 var TITLES = {
     '/':              'Copper Linux - Practical Linux Distribution',
     '/daily-driving': 'Copper Linux - Daily Driving Mode',
-    '/security':      'Vortex Linux - Security Edition',
-    '/tools':         'Tools - Copper Linux / Vortex',
+    '/security':      'Deadlight Linux - Security Edition',
+    '/tools':         'Tools - Copper Linux / Deadlight',
     '/contributions': 'Contribute - Copper Linux',
     '/contributors':  'Team - Copper Linux',
     '/track':         'Track - Copper Linux',
@@ -26,16 +26,13 @@ function navigate() {
     stopTrackPolling();
     var hash = getHash();
     var app  = document.getElementById('app');
-    var html = (ROUTES[hash] || page404)();
-
-    $('#app').hide();
-    app.innerHTML = html;
-    $('#app').fadeIn('slow');
+    app.innerHTML = (ROUTES[hash] || page404)();
 
     document.title = TITLES[hash] || TITLES['/'];
     syncTheme(hash);
     setActiveNav(hash);
     bindPageInteractions(hash);
+    initReveal();
     window.scrollTo(0, 0);
 }
 
@@ -46,7 +43,7 @@ document.addEventListener('DOMContentLoaded', navigate);
 var NAV_IDS = {
     '/':              'nav-home',
     '/daily-driving': 'nav-daily',
-    '/security':      'nav-vortex',
+    '/security':      'nav-deadlight',
     '/tools':         'nav-tools',
     '/contributions': 'nav-contributions',
     '/contributors':  'nav-contributors',
@@ -59,17 +56,18 @@ function setActiveNav(hash) {
     if (id) $('#' + id).addClass('active');
 }
 
-/* flip the accent color on vortex pages */
+/* both editions share one black/yellow theme; this flag only tells the
+   mode switch which page it is currently on */
 function syncTheme(hash) {
-    var isVortex = (hash === '/security' || hash === '/tools');
-    document.body.classList.toggle('vortex', isVortex);
-    $('#mode-copper').toggleClass('active', !isVortex);
-    $('#mode-vortex').toggleClass('active', isVortex);
+    var isDeadlight = (hash === '/security' || hash === '/tools');
+    document.body.classList.toggle('deadlight', isDeadlight);
+    $('#mode-copper').toggleClass('active', !isDeadlight);
+    $('#mode-deadlight').toggleClass('active', isDeadlight);
 }
 
 /* page specific stuff to run after it renders */
 function bindPageInteractions(hash) {
-    if (hash === '/') { initCarousel(); }
+    if (hash === '/') loadReleases();
     if (hash === '/daily-driving' || hash === '/security') initTerminal();
     if (hash === '/tools') loadToolsData();
     if (hash === '/contributors') renderTeam();
@@ -79,22 +77,59 @@ function bindPageInteractions(hash) {
     }
 }
 
-/* homepage carousel, nothing fancy */
-function initCarousel() {
-    $('.carousel').carousel({ interval: 4000 });
+/* ------------------------------------------------------------------
+   scroll reveal — panels and cards ease up once as they enter the
+   viewport. Elements are only marked .reveal by JS at reveal time,
+   so content stays visible if any of this fails.
+   ------------------------------------------------------------------ */
+var revealObserver = null;
+
+function initReveal() {
+    var targets = document.querySelectorAll(
+        '#app .hero-copy > *,' +
+        '#app .stat-strip, #app .section-head, #app .edition-card,' +
+        '#app .release-card, #app .panel, #app .page-header-title,' +
+        '#app .breadcrumb, #app .terminal-window'
+    );
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var pending = [];
+    for (var i = 0; i < targets.length; i++) {
+        if (!targets[i].classList.contains('reveal')) pending.push(targets[i]);
+    }
+
+    if (reduce || !('IntersectionObserver' in window)) {
+        pending.forEach(function (el) { el.classList.add('reveal', 'is-visible'); });
+        return;
+    }
+
+    if (!revealObserver) {
+        revealObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (!entry.isIntersecting) return;
+                entry.target.classList.add('is-visible');
+                revealObserver.unobserve(entry.target);
+            });
+        }, { threshold: 0.08, rootMargin: '0px 0px -6% 0px' });
+    }
+
+    pending.forEach(function (el, i) {
+        el.classList.add('reveal');
+        el.style.transitionDelay = ((i % 4) * 70) + 'ms';
+        revealObserver.observe(el);
+    });
 }
 
-/* fake terminal for the daily/vortex pages, type "help" to see commands */
+/* fake terminal for the daily/deadlight pages, type "help" to see commands */
 var TERM_COMMANDS = {
     help: [
         'Available commands:',
-        '  help      Show this message',
-        '  about     About Copper Linux',
-        '  version   Display version info',
-        '  team      List contributors',
-        '  vortex    About Vortex Linux',
-        '  neofetch  System info',
-        '  clear     Clear terminal',
+        '  help       Show this message',
+        '  about      About Copper Linux',
+        '  version    Display version info',
+        '  team       List contributors',
+        '  deadlight  About Deadlight Linux',
+        '  neofetch   System info',
+        '  clear      Clear terminal',
     ],
     about: [
         'Copper Linux — The Foundation.',
@@ -102,31 +137,31 @@ var TERM_COMMANDS = {
         'by a small team of three people.',
     ],
     version: [
-        'Copper Linux v0.1.0-dev',
-        'Kernel: 6.8-copper-custom',
-        'Arch:   x86_64',
-        'Status: In Development',
+        'Copper Linux v0.2.0 (pre-release)',
+        'Arch:     x86_64',
+        'Status:   In development',
+        'Releases: github.com/Copper-linux/copper',
     ],
     team: [
         'TEAM:',
-        '  12hrformat                 — Built Vortex Linux',
-        '  farcrowx                   — total noob',
-        '  krishnarajyagru27-creator  — Built the Core system of Copper linux',
+        '  Firstspot7  — Developer',
+        '  12hrformat  — Core system & Deadlight Linux',
+        '  farcrowx    — GitHub & community',
     ],
-    vortex: [
-        'Vortex Linux — Security Edition',
+    deadlight: [
+        'Deadlight Linux — Security Edition',
         'Cybersecurity-focused reskin of Copper Linux.',
         'Preinstalled tools are planned for pentesting, CTFs, and research.',
         'WARNING: Only use on systems you own or have permission to test.',
     ],
     neofetch: [
-        '         OS:     Copper Linux ',
-        '         Kernel: linux',
-        '         Shell:  idk i like zsh',
+        '         OS:     Copper Linux',
+        '         Kernel: copper-custom',
+        '         Shell:  zsh',
         '         DE:     TBD',
-        '         RAM:    too expensive',
+        '         RAM:    whatever you have',
         '         Team:   3 contributors',
-        '         Status: In Development',
+        '         Status: In development',
     ],
 };
 
@@ -182,7 +217,7 @@ async function loadToolsData() {
         if (count) count.textContent = tools.length;
 
         if (!tools.length) {
-            tbody.innerHTML = '<tr><td colspan="5" class="tbl-name">No tools available yet — the Vortex toolkit is still in development.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5" class="tbl-name">No tools available yet — the Deadlight toolkit is still in development.</td></tr>';
             return;
         }
         tbody.innerHTML = tools.map(toolRow).join('');
@@ -234,8 +269,7 @@ window.searchTools = function () {
    the api gives around 5k requests per hour 
    ------------------------------------------------------------------ */
 var GH_REPOS = [
-    { owner: 'Copper-linux', repo: 'Copper-linux-website', label: 'Website Repository', url: 'https://github.com/Copper-linux/Copper-linux-website', branch: '12hrformat-patch-1' },
-    { owner: 'Copper-linux', repo: 'copper',                label: 'Main Repository',    url: 'https://github.com/Copper-linux/copper',                branch: 'main' },
+    { owner: 'Copper-linux', repo: 'copper', label: 'Main Repository', url: 'https://github.com/Copper-linux/copper', branch: 'main' },
 ];
 
 var GH_RATE_LIMITED = false;
@@ -273,11 +307,72 @@ async function ghGet(path) {
     return res.json();
 }
 
+/* releases, straight from the copper repo — github api, always current */
+async function loadReleases() {
+    var list = document.getElementById('release-list');
+    if (!list) return;
+
+    try {
+        var releases = await ghGet('/repos/Copper-linux/copper/releases?per_page=6');
+        if (!Array.isArray(releases) || !releases.length) {
+            list.innerHTML = '<p class="dim-text">No releases published yet &mdash; watch the <a href="https://github.com/Copper-linux/copper/releases" target="_blank">repository</a>.</p>';
+            return;
+        }
+
+        var stat = document.getElementById('stat-releases');
+        if (stat) stat.textContent = releases.length;
+
+        var hero = document.getElementById('hero-release');
+        if (hero) {
+            hero.textContent = releases[0].tag_name + (releases[0].prerelease ? ' (pre-release)' : '');
+            hero.href = releases[0].html_url;
+        }
+
+        list.innerHTML = releases.map(releaseCard).join('');
+        initReveal();
+    } catch (e) {
+        if (e && e.message === 'rate limited') markRateLimited();
+        list.innerHTML = '<p class="dim-text">Could not reach the GitHub API right now &mdash; '
+            + 'the releases live on <a href="https://github.com/Copper-linux/copper/releases" target="_blank">github.com/Copper-linux/copper</a>.</p>';
+    }
+}
+
+function releaseCard(r) {
+    var tag = String(r.tag_name || '');
+    var badge = r.prerelease
+        ? '<span class="release-badge">Pre-release</span>'
+        : '<span class="release-badge release-badge-stable">Release</span>';
+
+    var date = '';
+    if (r.published_at) {
+        var d = new Date(r.published_at);
+        if (!isNaN(d)) date = d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+
+    var lines = String(r.body || '').replace(/\r/g, '').split('\n');
+    var first = '';
+    for (var i = 0; i < lines.length; i++) {
+        var l = lines[i].trim();
+        if (l) { first = l.replace(/^#+\s*/, '').replace(/^[-*+]\s*/, ''); break; }
+    }
+    if (first.length > 160) first = first.slice(0, 157).trim() + '…';
+
+    return '<article class="release-card">'
+        + '<div class="release-version">' + escHtml(tag) + '</div>'
+        + '<div class="release-body">'
+        +   '<div class="release-head"><h3>' + escHtml(String(r.name || r.tag_name || '')) + '</h3>' + badge + '</div>'
+        +   (date ? '<p class="release-date">' + escHtml(date) + '</p>' : '')
+        +   (first ? '<p class="release-excerpt">' + escHtml(first) + '</p>' : '')
+        +   '<a class="release-link" href="' + escHtml(String(r.html_url || '')) + '" target="_blank">Release notes &rarr;</a>'
+        + '</div>'
+        + '</article>';
+}
+
 /* the three of us + avatars from github (initials if the api is down) */
 var TEAM = [
-    { login: 'farcrowx',                  role: 'Managing github, social accounts-supporter' },
-    { login: '12hrformat',                role: 'Built Vortex linux-The Honored One' },
-    { login: 'krishnarajyagru27-creator', role: 'Built the core system of Copper linux-Developer' },
+    { login: 'Firstspot7', role: 'Developer' },
+    { login: '12hrformat', role: 'Built the core system & Deadlight Linux - Developer' },
+    { login: 'farcrowx',   role: 'Managing GitHub & social accounts - Supporter' },
 ];
 
 var AVATAR_CACHE = {};
@@ -358,9 +453,10 @@ function renderTrack() {
     GH_RATE_LIMITED = false;
     if (banner) banner.innerHTML = '';
     status.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Fetching latest commits&hellip;';
+    var colClass = GH_REPOS.length > 1 ? 'col-md-6' : 'col-md-12';
     feed.innerHTML = '<div class="row">'
         + GH_REPOS.map(function (r) {
-            return '<div class="col-md-6 track-col">'
+            return '<div class="' + colClass + ' track-col">'
                 + '<div class="panel panel-default text-left track-repo">'
                 + '<div class="panel-heading"><b>' + escHtml(r.label) + '</b>'
                 + ' <a class="branch-chip" href="' + escHtml(r.url + '/tree/' + r.branch) + '" target="_blank">' + escHtml(r.branch) + '</a>'
@@ -450,59 +546,69 @@ function escHtml(s) {
 /* all the page html lives below (no react here sorry) */
 function pageHome() {
     return ''
-    /* top carousel */
-    + '<header id="myCarousel" class="carousel slide" data-ride="carousel">'
-    +   '<ol class="carousel-indicators">'
-    +     '<li data-target="#myCarousel" data-slide-to="0" class="active"></li>'
-    +     '<li data-target="#myCarousel" data-slide-to="1"></li>'
-    +   '</ol>'
-    +   '<div class="carousel-inner">'
-    +     '<div class="item active">'
-    +       '<div class="fill slide-copper"></div>'
-    +       '<div class="carousel-caption"><h2>Copper Linux <br />Practical Linux Distribution</h2></div>'
-    +     '</div>'
-    +     '<div class="item">'
-    +       '<div class="fill slide-vortex"></div>'
-    +       '<div class="carousel-caption"><h2>Vortex Linux <br />Security-Focused Edition</h2></div>'
+    /* hero */
+    + '<header class="hero">'
+    +   '<div class="container">'
+    +     '<div class="hero-copy">'
+    +       '<p class="hero-kicker"><span class="kicker-dot"></span>Open source &middot; in development &middot; x86_64</p>'
+    +       '<h1 class="hero-title">Copper<br /><span class="hero-title-accent">Linux</span></h1>'
+    +       '<p class="hero-sub">A small, practical distribution built by three people &mdash; plus a security edition called <a href="#/security">Deadlight</a>. Nothing to download yet, and we are not going to pretend otherwise.</p>'
+    +       '<div class="hero-actions">'
+    +         '<a class="btn btn-hero" href="https://github.com/Copper-linux/copper" target="_blank"><i class="fab fa-github"></i> View on GitHub</a>'
+    +         '<a class="btn btn-hero-ghost" href="#/daily-driving">Explore editions</a>'
+    +       '</div>'
+    +       '<div class="hero-meta">'
+    +         '<span class="hero-chip">Latest release: <a id="hero-release" href="https://github.com/Copper-linux/copper/releases" target="_blank">checking&hellip;</a></span>'
+    +         '<span class="hero-chip hero-chip-dim">No ISO yet</span>'
+    +       '</div>'
     +     '</div>'
     +   '</div>'
-    +   '<a class="left carousel-control" data-target="#myCarousel" data-slide="prev"><span class="icon-prev"></span></a>'
-    +   '<a class="right carousel-control" data-target="#myCarousel" data-slide="next"><span class="icon-next"></span></a>'
     + '</header>'
+    + '<div class="hazard-strip" aria-hidden="true"></div>'
 
     + '<div class="container">'
-    +   '<div class="row">'
-    +     '<div class="col-lg-12">'
-    +       '<div class="page-header page-header-title header-copper"><h1>Copper</h1> <h2>Homepage</h2></div>'
-    +       '<div class="panel panel-default text-left">'
-    +         '<div class="panel-heading"><b>About</b></div>'
-    +         '<div class="list-group-item">'
-    +           '<p>This is the homepage for Copper Linux, a distro three people are putting together because nothing else quite fit. Early days: nothing to download yet, plenty of rough edges.</p>'
-    +           '<p>Something broken or missing? Open an issue on the <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub repo</a>, or fix it yourself and send a pull request.</p>'
-    +           '<p>Status: <span class="blyellow">Still in development</span> — neither Copper nor Vortex is installable yet.</p>'
-    +         '</div>'
-    +       '</div>'
-    +     '</div>'
-    +     '<div class="col-lg-12"><h2 class="page-header">Editions</h2></div>'
+    /* honest numbers, no vanity metrics */
+    +   '<div class="stat-strip">'
+    +     '<div class="stat"><span class="stat-num">3</span><span class="stat-label">Contributors</span></div>'
+    +     '<div class="stat"><span class="stat-num" id="stat-releases">&mdash;</span><span class="stat-label">GitHub releases</span></div>'
+    +     '<div class="stat"><span class="stat-num">0</span><span class="stat-label">ISOs to download</span></div>'
+    +   '</div>'
+
+    /* editions */
+    +   '<div class="section-head"><h2>Editions</h2><p class="section-sub">Two ways to run the same base system.</p></div>'
+    +   '<div class="row editions">'
     +     '<div class="col-md-6">'
-    +       '<div class="panel panel-default text-left">'
-    +         '<div class="panel-heading"><b>Copper — Daily Driving Mode</b></div>'
-    +         '<div class="list-group-item">'
-    +           '<p>A plain desktop for getting real work done: school, code, media, the boring stuff that matters.</p>'
-    +           '<div class="code-block"><p class="command">copper --status</p><p>Still in development — not available yet.</p></div>'
-    +           '<a href="#/daily-driving" class="btn btn-default">Daily Driving Mode &rarr;</a>'
-    +         '</div>'
-    +       '</div>'
+    +       '<article class="edition-card">'
+    +         '<p class="edition-kicker">Daily driving</p>'
+    +         '<h3>Copper</h3>'
+    +         '<p>A plain desktop for getting real work done: school, code, media, the boring stuff that matters.</p>'
+    +         '<div class="code-block"><p class="command">copper --status</p><p>Still in development &mdash; not available yet.</p></div>'
+    +         '<a href="#/daily-driving" class="btn btn-default">Daily driving mode &rarr;</a>'
+    +       '</article>'
     +     '</div>'
     +     '<div class="col-md-6">'
-    +       '<div class="panel panel-default text-left">'
-    +         '<div class="panel-heading"><b>Vortex — Security Edition</b></div>'
-    +         '<div class="list-group-item">'
-    +           '<p>Copper rebuilt for security work: pentesting, CTFs, lab boxes. The toolkit gets assembled as we go.</p>'
-    +           '<div class="code-block"><p class="command">vortex --tools list</p><p>Not available yet — still in development.</p></div>'
-    +           '<a href="#/security" class="btn btn-default">Security Mode &rarr;</a>'
-    +         '</div>'
-    +       '</div>'
+    +       '<article class="edition-card edition-card-alt">'
+    +         '<p class="edition-kicker">Security edition</p>'
+    +         '<h3>Deadlight</h3>'
+    +         '<p>Copper rebuilt for security work: pentesting, CTFs, lab boxes. The toolkit gets assembled as we go.</p>'
+    +         '<div class="code-block"><p class="command">deadlight --tools list</p><p>Not available yet &mdash; still in development.</p></div>'
+    +         '<a href="#/security" class="btn btn-default">Security mode &rarr;</a>'
+    +       '</article>'
+    +     '</div>'
+    +   '</div>'
+
+    /* releases, live from the copper repo */
+    +   '<div class="section-head"><h2>Releases</h2><p class="section-sub">Published on <a href="https://github.com/Copper-linux/copper/releases" target="_blank">GitHub</a> by the Copper Linux team.</p></div>'
+    +   '<div id="release-list" class="release-list"><p class="dim-text">Loading releases&hellip;</p></div>'
+
+    /* about */
+    +   '<div class="section-head"><h2>About</h2></div>'
+    +   '<div class="panel panel-default text-left">'
+    +     '<div class="panel-heading"><b>Project status</b></div>'
+    +     '<div class="list-group-item">'
+    +       '<p>Copper Linux is a distro three people are putting together because nothing else quite fit. Early days: nothing to download yet, plenty of rough edges.</p>'
+    +       '<p>Something broken or missing? Open an issue on the <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub repo</a>, or fix it yourself and send a pull request.</p>'
+    +       '<p>Status: <span class="blyellow">Still in development</span> &mdash; neither Copper nor Deadlight is installable yet.</p>'
     +     '</div>'
     +   '</div>'
     + '</div>';
@@ -540,9 +646,9 @@ function pageDaily() {
     +         '<div class="panel-heading"><b>What\'s Not Ready Yet</b></div>'
     +         '<div class="list-group-item">'
     +           '<ul class="list-group">'
-    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#e1e111;margin-right:8px"></i>A settings app you can find</li>'
-    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#e1e111;margin-right:8px"></i>Updates that don\'t nuke your config</li>'
-    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#e1e111;margin-right:8px"></i>Less fiddling to get toolchains running</li>'
+    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#ffd400;margin-right:8px"></i>A settings app you can find</li>'
+    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#ffd400;margin-right:8px"></i>Updates that don\'t nuke your config</li>'
+    +             '<li class="list-group-item"><i class="fas fa-hourglass-half" style="color:#ffd400;margin-right:8px"></i>Less fiddling to get toolchains running</li>'
     +           '</ul>'
     +         '</div>'
     +       '</div>'
@@ -552,7 +658,7 @@ function pageDaily() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>tty0 &mdash; copper@copper</b></div>'
     +         '<div class="list-group-item">'
-    +           terminalBlock('copper@copper', 'Copper Linux v0.1.0-dev — Development Edition', 'Type "help" for available commands.', '$')
+    +           terminalBlock('copper@copper', 'Copper Linux — development build', 'Type "help" for available commands.', '$')
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -561,7 +667,7 @@ function pageDaily() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>Download Copper Linux</b></div>'
     +         '<div class="list-group-item">'
-    +           '<div class="info" style="border-color:#e1e111"><p><i class="fas fa-exclamation-triangle"></i> <b>Still in development.</b> No ISOs yet — there is literally nothing to download.</p></div>'
+    +           '<div class="info" style="border-color:#ffd400"><p><i class="fas fa-exclamation-triangle"></i> <b>Still in development.</b> No ISOs yet — there is literally nothing to download.</p></div>'
     +           '<div class="code-block"><p class="command">copper --status</p><p>Copper Linux</p><p>Status:   still in development</p><p>Downloads: not available yet</p></div>'
     +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">View on GitHub</a>'
     +         '</div>'
@@ -576,12 +682,12 @@ function pageSecurity() {
     + '<div class="container">'
     +   '<div class="row">'
     +     '<div class="col-lg-12">'
-    +       '<div class="page-header page-header-title"><h1>Vortex</h1> <h2>Security Edition</h2></div>'
-    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Vortex</li></ol>'
+    +       '<div class="page-header page-header-title"><h1>Deadlight</h1> <h2>Security Edition</h2></div>'
+    +       '<ol class="breadcrumb"><li><a href="#/">Home</a></li><li class="active">Deadlight</li></ol>'
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>About</b></div>'
     +         '<div class="list-group-item">'
-    +           '<p>Vortex is Copper rebuilt for security work: pentesting, CTFs, network testing, lab boxes. It\'s a reskin with its own toolkit, and that toolkit is still being put together.</p>'
+    +           '<p>Deadlight is Copper rebuilt for security work: pentesting, CTFs, network testing, lab boxes. It\'s a reskin with its own toolkit, and that toolkit is still being put together.</p>'
     +           '<div class="info" style="border-color:#ff2c2c"><p><i class="fas fa-exclamation-triangle"></i> <b>CRITICAL:</b> Only use security tools against systems you own or have explicit permission to test.</p></div>'
     +         '</div>'
     +       '</div>'
@@ -592,10 +698,10 @@ function pageSecurity() {
     +         '<div class="panel-heading"><b>The Crowd</b></div>'
     +         '<div class="list-group-item">'
     +           '<ul class="list-group">'
-    +             '<li class="list-group-item"><i class="fas fa-user-secret" style="color:#4BA6E7;margin-right:8px"></i>People with a lab box</li>'
-    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#4BA6E7;margin-right:8px"></i>Pentesters who read the docs</li>'
-    +             '<li class="list-group-item"><i class="fas fa-flag" style="color:#4BA6E7;margin-right:8px"></i>CTF addicts</li>'
-    +             '<li class="list-group-item"><i class="fas fa-graduation-cap" style="color:#4BA6E7;margin-right:8px"></i>Students on machines they own</li>'
+    +             '<li class="list-group-item"><i class="fas fa-user-secret" style="color:#ffd400;margin-right:8px"></i>People with a lab box</li>'
+    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#ffd400;margin-right:8px"></i>Pentesters who read the docs</li>'
+    +             '<li class="list-group-item"><i class="fas fa-flag" style="color:#ffd400;margin-right:8px"></i>CTF addicts</li>'
+    +             '<li class="list-group-item"><i class="fas fa-graduation-cap" style="color:#ffd400;margin-right:8px"></i>Students on machines they own</li>'
     +           '</ul>'
     +         '</div>'
     +       '</div>'
@@ -603,9 +709,9 @@ function pageSecurity() {
     +     '<div class="col-lg-12"><h2 class="page-header">Terminal</h2></div>'
     +     '<div class="col-lg-12">'
     +       '<div class="panel panel-default text-left">'
-    +         '<div class="panel-heading"><b>tty0 &mdash; root@vortex</b></div>'
+    +         '<div class="panel-heading"><b>tty0 &mdash; root@deadlight</b></div>'
     +         '<div class="list-group-item">'
-    +           terminalBlock('root@vortex', 'Vortex Linux (Copper Security Edition)', 'Type "help" for available commands.', '#')
+    +           terminalBlock('root@deadlight', 'Deadlight Linux (Copper Security Edition)', 'Type "help" for available commands.', '#')
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -614,7 +720,7 @@ function pageSecurity() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>Tools</b></div>'
     +         '<div class="list-group-item">'
-    +           '<p>Vortex isn\'t available yet. The preconfigured toolkit gets filled in as we build the thing — no ETA, check back when we say so.</p>'
+    +           '<p>Deadlight isn\'t available yet. The preconfigured toolkit gets filled in as we build the thing &mdash; no ETA, check back when we say so.</p>'
     +           '<a href="#/tools" class="btn btn-default">Tools Directory &rarr;</a>'
     +         '</div>'
     +       '</div>'
@@ -634,14 +740,14 @@ function pageTools() {
     +     '<div class="panel panel-default text-left">'
     +       '<div class="panel-heading"><b>Information</b></div>'
     +       '<div class="list-group-item">'
-    +         '<p>Every tool in the Vortex toolkit lands in the table below. Missing one? Open an <a href="https://github.com/Copper-linux/copper/issues/new" target="_blank">issue</a>, or PR it yourself into <code>tools.json</code>.</p>'
-    +         '<p><span class="blyellow">Still in development:</span> no tools shipped yet, so this list is mostly empty. It fills in as Vortex comes together.</p>'
+    +         '<p>Every tool in the Deadlight toolkit lands in the table below. Missing one? Open an <a href="https://github.com/Copper-linux/copper/issues/new" target="_blank">issue</a>, or PR it yourself into <code>tools.json</code>.</p>'
+    +         '<p><span class="blyellow">Still in development:</span> no tools shipped yet, so this list is mostly empty. It fills in as Deadlight comes together.</p>'
     +         '<p><b>Tool count:</b> <a href="#/tools"><span id="tool-count">0</span></a>'
     +         '<input type="text" id="searchTools" onkeyup="searchTools()" placeholder="Input tool name" title="Type in a name"></p>'
     +       '</div>'
     +     '</div>'
     +     '<div class="panel panel-default text-left">'
-    +       '<div class="panel-heading"><b>Copper / Vortex Complete Tools List</b></div>'
+    +       '<div class="panel-heading"><b>Copper / Deadlight Complete Tools List</b></div>'
     +       '<div class="list-group-item">'
     +         '<table id="tbl-minimalist">'
     +           '<thead>'
@@ -674,10 +780,10 @@ function pageContributions() {
     +         '<div class="panel-heading"><b>What We Need</b></div>'
     +         '<div class="list-group-item">'
     +           '<ul class="list-group">'
-    +             '<li class="list-group-item"><i class="fas fa-code" style="color:#4BA6E7;margin-right:8px"></i><b>Code</b> &mdash; find a bug and fix it. Core utilities especially.</li>'
-    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#4BA6E7;margin-right:8px"></i><b>Bug Reports</b> &mdash; something broke? tell us exactly what you did.</li>'
-    +             '<li class="list-group-item"><i class="fas fa-flask" style="color:#4BA6E7;margin-right:8px"></i><b>Testing</b> &mdash; flash a test ISO on weird hardware, report what explodes.</li>'
-    +             '<li class="list-group-item"><i class="fas fa-wrench" style="color:#4BA6E7;margin-right:8px"></i><b>Tools</b> &mdash; help fill <code>tools.json</code> as Vortex comes together.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-code" style="color:#ffd400;margin-right:8px"></i><b>Code</b> &mdash; find a bug and fix it. Core utilities especially.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#ffd400;margin-right:8px"></i><b>Bug Reports</b> &mdash; something broke? tell us exactly what you did.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-flask" style="color:#ffd400;margin-right:8px"></i><b>Testing</b> &mdash; flash a test ISO on weird hardware, report what explodes.</li>'
+    +             '<li class="list-group-item"><i class="fas fa-wrench" style="color:#ffd400;margin-right:8px"></i><b>Tools</b> &mdash; help fill <code>tools.json</code> as Deadlight comes together.</li>'
     +           '</ul>'
     +         '</div>'
     +       '</div>'
@@ -691,7 +797,7 @@ function pageContributions() {
     +             '<li class="list-group-item"><span class="blgreen">4</span>&nbsp; Open a pull request</li>'
     +             '<li class="list-group-item"><span class="blgreen">5</span>&nbsp; Wait. We\'re three people.</li>'
     +           '</ol>'
-    +           '<p>New Vortex tool? Drop an entry in <code>tools.json</code>. No HTML surgery required.</p>'
+    +           '<p>New Deadlight tool? Drop an entry in <code>tools.json</code>. No HTML surgery required.</p>'
     +         '</div>'
     +       '</div>'
     +       '<div class="panel panel-default text-left">'
@@ -737,7 +843,7 @@ function pageTrack() {
     +           ' <button type="button" id="track-refresh" class="btn btn-default btn-xs">Refresh now</button>'
     +         '</div>'
     +         '<div class="list-group-item">'
-    +           '<div class="info"><p><i class="fas fa-sync-alt"></i> Refreshes every minute. Tracking <b>12hrformat-patch-1</b> on the website repo and <b>main</b> on the OS repo.</p></div>'
+    +           '<div class="info"><p><i class="fas fa-sync-alt"></i> Refreshes every minute. Tracking the <b>main</b> branch of <b>Copper-linux/copper</b>.</p></div>'
     +           '<div id="track-banner"></div>'
     +           '<div id="track-status" class="track-status"></div>'
     +           '<div id="track-feeds"></div>'
@@ -758,8 +864,8 @@ function page404() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>Error</b></div>'
     +         '<div class="list-group-item">'
-    +           '<p>idk what youre searching for but it inst here</p>'
-    +           '<p class="dim-text">Maybe a typo, maybe a dead link. Either way, nope.</p>'
+    +           '<p><b>404 &mdash; that page doesn\'t exist.</b></p>'
+    +           '<p class="dim-text">Maybe a typo, maybe a dead link. Head back home and try again.</p>'
     +           '<a href="#/" class="btn btn-default">Return Home</a>'
     +         '</div>'
     +       '</div>'
