@@ -31,6 +31,7 @@ function navigate() {
     document.title = TITLES[hash] || TITLES['/'];
     syncTheme(hash);
     setActiveNav(hash);
+    closeMobileNav();
     bindPageInteractions(hash);
     initReveal();
     window.scrollTo(0, 0);
@@ -51,7 +52,7 @@ var NAV_IDS = {
 };
 
 function setActiveNav(hash) {
-    $('.navbar-nav li').removeClass('active');
+    $('.navbar-nav > li').removeClass('active');
     var id = NAV_IDS[hash];
     if (id) $('#' + id).addClass('active');
 }
@@ -63,7 +64,35 @@ function syncTheme(hash) {
     document.body.classList.toggle('deadlight', isDeadlight);
     $('#mode-copper').toggleClass('active', !isDeadlight);
     $('#mode-deadlight').toggleClass('active', isDeadlight);
+    $('#mode-current').text(isDeadlight ? 'Deadlight' : 'Copper');
 }
+
+/* the mobile menu should never stay open over the page you just opened */
+function closeMobileNav() {
+    var el = document.getElementById('main-nav-collapse');
+    if (el && el.classList.contains('in')) $(el).collapse('hide');
+}
+
+/* auto-hide navbar: tucks away while scrolling down, slides back on the
+   way up (or near the top). Class toggles only, passive listener. */
+(function () {
+    var navbar = document.querySelector('.navbar-copper');
+    if (!navbar) return;
+    var lastY = window.pageYOffset;
+
+    window.addEventListener('scroll', function () {
+        var y = window.pageYOffset;
+        var delta = y - lastY;
+        if (Math.abs(delta) < 12) return;
+        var menuOpen = document.querySelector('.navbar-collapse.in');
+        if (!menuOpen && y > 140 && delta > 0) {
+            navbar.classList.add('navbar-hidden');
+        } else if (delta < 0 || y < 140) {
+            navbar.classList.remove('navbar-hidden');
+        }
+        lastY = y;
+    }, { passive: true });
+})();
 
 /* page specific stuff to run after it renders */
 function bindPageInteractions(hash) {

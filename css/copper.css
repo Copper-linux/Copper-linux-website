@@ -83,8 +83,7 @@ p a:not(.btn),
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
-.btn:focus-visible,
-.mode-btn:focus-visible {
+.btn:focus-visible {
 	outline: 2px solid var(--yl);
 	outline-offset: 2px;
 }
@@ -96,6 +95,13 @@ input:focus-visible,
 	background: #0d0d0d;
 	border-bottom: 2px solid var(--yl);
 	min-height: 56px;
+	transition: transform 0.25s var(--ease);
+	will-change: transform;
+}
+
+/* auto-hide: slides away on scroll down, back in on scroll up */
+.navbar-copper.navbar-hidden {
+	transform: translateY(-100%);
 }
 
 .navbar-copper .navbar-nav > li > a {
@@ -189,9 +195,9 @@ input:focus-visible,
 	.cl-wordmark { display: none; }
 }
 
-/* Mode switch */
+/* Mode dropdown — picks between the Copper and Deadlight pages */
 .modeswitch {
-	margin: 13px 0 0 12px;
+	margin: 8px 0 0 12px;
 	padding: 3px 8px;
 	border: 1px solid var(--line);
 	border-radius: 4px;
@@ -200,69 +206,61 @@ input:focus-visible,
 	line-height: 1.6;
 }
 
-.modeswitch .mode-label {
-	color: var(--dim);
-	font-family: var(--font-mono);
-	font-size: 10px;
-	text-transform: uppercase;
-	letter-spacing: 1px;
-	margin-right: 6px;
+/* the toggle is a navbar `li > a` too — shorter padding so the box
+   stays inside the 56px bar instead of ballooning out of it */
+.navbar-copper .navbar-nav > li.modeswitch > a.dropdown-toggle {
+	padding: 8px 10px;
+	line-height: 1;
+	letter-spacing: 0.06em;
 }
 
-.mode-btn {
-	font-family: var(--font-mono);
-	font-size: 12px;
-	padding: 2px 7px;
-	color: var(--dim);
-	text-transform: uppercase;
-	border-radius: 3px;
-	transition: color 0.2s var(--ease), background 0.2s var(--ease);
+.modeswitch .caret {
+	border-top-color: var(--yl);
+	margin-left: 4px;
+	vertical-align: middle;
 }
 
-.mode-btn:hover {
+#mode-current {
 	color: var(--yl);
-	text-decoration: none;
-}
-
-.mode-btn.active {
-	color: #0a0a0a;
-	background: var(--yl);
 	font-weight: 600;
 }
 
-/* The mode buttons are `li > a` as well, so the generic navbar link rules
-   (17px padding, dim colour) also hit them: the active pill balloons out of
-   the 56px bar and the two buttons render at different sizes. These restore
-   the compact pill and beat every navbar/media-query rule by specificity. */
-.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn {
+.modeswitch .dropdown-menu {
+	margin-top: 0;
+	min-width: 230px;
+	padding: 6px;
+	background: var(--bg-soft);
+	border: 1px solid var(--line);
+	border-radius: 4px;
+	box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+
+.navbar-copper .modeswitch .dropdown-menu > li > a {
+	padding: 10px 14px;
+	color: var(--soft);
 	font-family: var(--font-mono);
-	font-size: 12px;
-	font-weight: 400;
+	font-size: 12.5px;
 	text-transform: uppercase;
 	letter-spacing: 0.06em;
-	line-height: 1.6;
 	white-space: nowrap;
-	color: var(--dim);
-	background: transparent;
-	padding: 2px 7px;
-	margin: 0;
-	box-shadow: none;
+	transition: background 0.15s var(--ease), color 0.15s var(--ease);
 }
 
-.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn:hover,
-.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn:focus {
-	color: var(--yl);
-	background: transparent;
-	box-shadow: none;
-}
-
-.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn.active,
-.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn.active:hover,
-.navbar-copper .navbar-nav > li.modeswitch > a.mode-btn.active:focus {
-	color: #0a0a0a;
+.navbar-copper .modeswitch .dropdown-menu > li > a:hover,
+.navbar-copper .modeswitch .dropdown-menu > li > a:focus {
 	background: var(--yl);
-	font-weight: 600;
-	box-shadow: none;
+	color: #0a0a0a;
+}
+
+.modeswitch .dropdown-menu > li.active > a {
+	background: rgba(255, 212, 0, 0.14);
+	color: var(--yl);
+}
+
+.navbar-copper .modeswitch .dropdown-menu > li.active > a:hover,
+.navbar-copper .modeswitch .dropdown-menu > li.active > a:focus {
+	background: var(--yl);
+	color: #0a0a0a;
 }
 
 /* Both editions live in the same theme; this only adds a small cue
@@ -1410,6 +1408,21 @@ code {
 	.navbar-copper .navbar-nav > li > a { text-transform: none; }
 	.modeswitch { margin: 10px 0 10px 12px; }
 	#searchTools { width: 100%; float: none; }
+
+	/* mode dropdown sits inline in the collapsed menu */
+	.modeswitch .dropdown-menu {
+		position: static;
+		float: none;
+		width: 100%;
+		margin-top: 0;
+		padding: 0 0 4px;
+		background: transparent;
+		border: none;
+		box-shadow: none;
+	}
+	.navbar-copper .modeswitch .dropdown-menu > li > a {
+		padding: 8px 15px 8px 30px;
+	}
 
 	.contribute-steps { grid-template-columns: 1fr; }
 	.contribute-band { padding: 28px 22px; }
