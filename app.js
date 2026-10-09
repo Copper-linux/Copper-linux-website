@@ -1,5 +1,3 @@
-/* app.js, does smth idk*/
-/* routes: whats in the url hash decides what page shows */
 var ROUTES = {
     '/':              pageHome,
     '/daily-driving': pageDaily,
@@ -144,9 +142,7 @@ function initReveal() {
     });
 }
 
-/* ------------------------------------------------------------------
-   tools- fetch tools that are included in the os, inspired by blackarch.org
-   ------------------------------------------------------------------ */
+/* tools list, inspired by blackarch tools.html */
 async function loadToolsData() {
     var tbody = document.getElementById('tools-tbody');
     var count = document.getElementById('tool-count');
@@ -314,7 +310,7 @@ function releaseCard(r) {
 /* the three of us + avatars from github (initials if the api is down) */
 var TEAM = [
     { login: 'Firstspot7', role: 'Developer' },
-    { login: '12hrformat', role: 'Leader' },
+    { login: '12hrformat', role: 'Leader (as always)' },
     { login: 'farcrowx',   role: 'Developer' },
 ];
 
@@ -495,7 +491,7 @@ function pageHome() {
     +     '<div class="hero-copy">'
     +       '<p class="hero-kicker"><span class="kicker-dot"></span>Open source &middot; in development &middot; x86_64</p>'
     +       '<h1 class="hero-title">Copper<br /><span class="hero-title-accent">Linux</span></h1>'
-    +       '<p class="hero-sub">A small, practical distribution built by three people &mdash; plus a security edition called <a href="#/security">Deadlight</a>. Pre-releases are on GitHub; a stable ISO is not, and we are not going to pretend otherwise.</p>'
+    +       '<p class="hero-sub">A small, fast linux distribution built by three people &mdash; plus a security edition called <a href="#/security">Deadlight</a>. Pre-releases are on GitHub, including a stable iso too I mean kind of, I mean the gui is there you can call it an full iso? idk man</p>'
     +       '<div class="hero-actions">'
     +         '<a class="btn btn-hero" href="https://github.com/Copper-linux/copper" target="_blank"><i class="fab fa-github"></i> View on GitHub</a>'
     +         '<a class="btn btn-hero-ghost" href="#/daily-driving">Explore editions</a>'
@@ -517,23 +513,23 @@ function pageHome() {
     +     '<div class="stat"><span class="stat-num">x86_64</span><span class="stat-label">Architecture</span></div>'
     +   '</div>'
 
-    /* editions */
-    +   '<div class="section-head"><h2>Editions</h2><p class="section-sub">Two ways to run the same base system.</p></div>'
+    /* list editions */
+    +   '<div class="section-head"><h2>Editions</h2><p class="section-sub">Two editions, same system</p></div>'
     +   '<div class="row editions">'
     +     '<div class="col-md-6">'
     +       '<article class="edition-card">'
-    +         '<p class="edition-kicker">Daily driving</p>'
+    +         '<p class="edition-kicker">Daily use</p>'
     +         '<h3>Copper</h3>'
-    +         '<p>A plain desktop for getting real work done: school, code, media, the boring stuff that matters.</p>'
-    +         '<a href="#/daily-driving" class="btn btn-default">Daily driving mode &rarr;</a>'
+    +         '<p>A desktop for everyday use and productivity and all the boring stuff.</p>'
+    +         '<a href="#/daily-driving" class="btn btn-default">Check out Copper Linux &rarr;</a>'
     +       '</article>'
     +     '</div>'
     +     '<div class="col-md-6">'
     +       '<article class="edition-card edition-card-alt">'
     +         '<p class="edition-kicker">Security edition</p>'
     +         '<h3>Deadlight</h3>'
-    +         '<p>Copper rebuilt for security work: pentesting, CTFs, lab boxes. The toolkit gets assembled as we go.</p>'
-    +         '<a href="#/security" class="btn btn-default">Security mode &rarr;</a>'
+    +         '<p>A security-focused edition of Copper Linux, just a reskin really, has preinstalled tools.</p>'
+    +         '<a href="#/security" class="btn btn-default">Check out Deadlight Linux &rarr;</a>'
     +       '</article>'
     +     '</div>'
     +   '</div>'
@@ -547,16 +543,16 @@ function pageHome() {
     +   '<div class="panel panel-default text-left">'
     +     '<div class="panel-heading"><b>Project status</b></div>'
     +     '<div class="list-group-item">'
-    +       '<p>Copper Linux is a distro three people are putting together because nothing else quite fit. Early days: plenty of rough edges, and the pre-releases are the honest snapshot of where we are.</p>'
-    +       '<p>Something broken or missing? Open an issue on the <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub repo</a>, or fix it yourself and send a pull request.</p>'
+    +       '<p>Copper linux is a distro built by three people, As of now, the GUI is built, Ethernet works, copper has its own pck manager called "ingot" (get it? copper ingot... anyway) </p>'
+    +       '<p>Something broken or missing? Open an issue on the <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub repo</a>, or fix it yourself and send a pull request <--- this one please</p>'
     +     '</div>'
     +   '</div>'
 
-    /* contribute band — the honest call to action */
+    /* contribute band */
     +   '<section class="contribute-band">'
     +     '<p class="band-kicker">Contribute</p>'
     +     '<h2>Help us build it</h2>'
-    +     '<p class="band-sub">There is no stable ISO yet, but every pre-release is up on GitHub. Download one, break it, then report what went wrong &mdash; or fix it yourself.</p>'
+    +     '<p class="band-sub">There is no stable ISO yet, but every pre-release is up on GitHub. Download one, break it, then report what went wrong &mdash; or fix it yourself, and get listed as a contributor.</p>'
     +     '<div class="contribute-steps">'
     +       '<div class="step"><span class="step-num">1</span><h3>Download a pre-release</h3><p>The source for every pre-release sits on the releases page.</p></div>'
     +       '<div class="step"><span class="step-num">2</span><h3>Boot it and break it</h3><p>Run it on real hardware and write down everything that misbehaves.</p></div>'
@@ -580,7 +576,7 @@ function pageDaily() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>About</b></div>'
     +         '<div class="list-group-item">'
-    +           '<p>A desktop distro for web, code, school, work and media. We\'re three people, so there will be bugs and glitches. <a href="https://github.com/Copper-linux/copper" target="_blank">Tell us about them</a> and we\'ll actually try to fix them.</p>'
+    +           '<p>A desktop distro for web, code, school, work and productivity. We\'re three people, so there will be bugs and glitches (but I\'m good at coding so don\'t expect bugs). <a href="https://github.com/Copper-linux/copper" target="_blank">Tell us about them</a> and we\'ll actually try to fix them.</p>'
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -635,8 +631,8 @@ function pageSecurity() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>About</b></div>'
     +         '<div class="list-group-item">'
-    +           '<p>Deadlight is Copper rebuilt for security work: pentesting, CTFs, network testing, lab boxes. It\'s a reskin with its own toolkit, and that toolkit is still being put together.</p>'
-    +           '<div class="info" style="border-color:#ff2c2c"><p><i class="fas fa-exclamation-triangle"></i> <b>CRITICAL:</b> Only use security tools against systems you own or have explicit permission to test.</p></div>'
+    +           '<p>Deadlight is Copper rebuilt for security work: pentesting, CTFs, network testing, lab boxes. It\'s a reskin with its own toolkit, and that toolkit is still being put together. Btw if you have a tool or are a beginner and have something to contribute you can submit your tool to use, Deadlight linux is still in development so we\'ll be adding new things</p>'
+    +           '<div class="info" style="border-color:#ff2c2c"><p><i class="fas fa-exclamation-triangle"></i> <b>Important:</b> Only use tools against your own systems if you dont\'t want to go to prison, otherwise we\'re cool yk?</p></div>'
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -646,10 +642,10 @@ function pageSecurity() {
     +         '<div class="panel-heading"><b>The Crowd</b></div>'
     +         '<div class="list-group-item">'
     +           '<ul class="list-group">'
-    +             '<li class="list-group-item"><i class="fas fa-user-secret" style="color:#ffd400;margin-right:8px"></i>People with a lab box</li>'
-    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#ffd400;margin-right:8px"></i>Pentesters who read the docs</li>'
+    +             '<li class="list-group-item"><i class="fas fa-user-secret" style="color:#ffd400;margin-right:8px"></i>People new to cybersecurity</li>'
+    +             '<li class="list-group-item"><i class="fas fa-bug" style="color:#ffd400;margin-right:8px"></i>Pentesters</li>'
     +             '<li class="list-group-item"><i class="fas fa-flag" style="color:#ffd400;margin-right:8px"></i>CTF addicts</li>'
-    +             '<li class="list-group-item"><i class="fas fa-graduation-cap" style="color:#ffd400;margin-right:8px"></i>Students on machines they own</li>'
+    +             '<li class="list-group-item"><i class="fas fa-graduation-cap" style="color:#ffd400;margin-right:8px"></i>Students learning hacking</li>'
     +           '</ul>'
     +         '</div>'
     +       '</div>'
