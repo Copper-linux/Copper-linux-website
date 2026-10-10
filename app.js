@@ -208,7 +208,7 @@ window.searchTools = function () {
    the api gives around 5k requests per hour 
    ------------------------------------------------------------------ */
 var GH_REPOS = [
-    { owner: 'Copper-linux', repo: 'copper', label: 'Main Repository', url: 'https://github.com/Copper-linux/copper', branch: 'main' },
+    { owner: '12hrformat', repo: 'copper', label: 'Main Repository', url: 'https://github.com/12hrformat/copper', branch: 'main' },
 ];
 
 var GH_RATE_LIMITED = false;
@@ -252,9 +252,9 @@ async function loadReleases() {
     if (!list) return;
 
     try {
-        var releases = await ghGet('/repos/Copper-linux/copper/releases?per_page=6');
+        var releases = await ghGet('/repos/12hrformat/copper/releases?per_page=6');
         if (!Array.isArray(releases) || !releases.length) {
-            list.innerHTML = '<p class="dim-text">No releases published yet &mdash; watch the <a href="https://github.com/Copper-linux/copper/releases" target="_blank">repository</a>.</p>';
+            list.innerHTML = '<p class="dim-text">No releases published yet &mdash; watch the <a href="https://github.com/12hrformat/copper/releases" target="_blank">repository</a>.</p>';
             return;
         }
 
@@ -272,7 +272,7 @@ async function loadReleases() {
     } catch (e) {
         if (e && e.message === 'rate limited') markRateLimited();
         list.innerHTML = '<p class="dim-text">Could not reach the GitHub API right now &mdash; '
-            + 'the releases live on <a href="https://github.com/Copper-linux/copper/releases" target="_blank">github.com/Copper-linux/copper</a>.</p>';
+            + 'the releases live on <a href="https://github.com/12hrformat/copper/releases" target="_blank">github.com/12hrformat/copper</a>.</p>';
     }
 }
 
@@ -493,11 +493,11 @@ function pageHome() {
     +       '<h1 class="hero-title">Copper<br /><span class="hero-title-accent">Linux</span></h1>'
     +       '<p class="hero-sub">A small, fast linux distribution built by three people &mdash; plus a security edition called <a href="#/security">Deadlight</a>. Pre-releases are on GitHub, including a stable iso too I mean kind of, I mean the gui is there you can call it an full iso? idk man</p>'
     +       '<div class="hero-actions">'
-    +         '<a class="btn btn-hero" href="https://github.com/Copper-linux/copper" target="_blank"><i class="fab fa-github"></i> View on GitHub</a>'
+    +         '<a class="btn btn-hero" href="https://github.com/12hrformat/copper" target="_blank"><i class="fab fa-github"></i> View on GitHub</a>'
     +         '<a class="btn btn-hero-ghost" href="#/daily-driving">Explore editions</a>'
     +       '</div>'
     +       '<div class="hero-meta">'
-    +         '<span class="hero-chip">Latest release: <a id="hero-release" href="https://github.com/Copper-linux/copper/releases" target="_blank">checking&hellip;</a></span>'
+    +         '<span class="hero-chip">Latest release: <a id="hero-release" href="https://github.com/12hrformat/copper/releases" target="_blank">checking&hellip;</a></span>'
     +         '<span class="hero-chip hero-chip-dim">Security edition: Deadlight</span>'
     +       '</div>'
     +     '</div>'
@@ -535,7 +535,7 @@ function pageHome() {
     +   '</div>'
 
     /* releases, live from the copper repo */
-    +   '<div class="section-head"><h2>Releases</h2><p class="section-sub">Published on <a href="https://github.com/Copper-linux/copper/releases" target="_blank">GitHub</a> by the Copper Linux team.</p></div>'
+    +   '<div class="section-head"><h2>Releases</h2><p class="section-sub">Published on <a href="https://github.com/12hrformat/copper/releases" target="_blank">GitHub</a> by the Copper Linux team.</p></div>'
     +   '<div id="release-list" class="release-list"><p class="dim-text">Loading releases&hellip;</p></div>'
 
     /* about */
@@ -544,7 +544,7 @@ function pageHome() {
     +     '<div class="panel-heading"><b>Project status</b></div>'
     +     '<div class="list-group-item">'
     +       '<p>Copper linux is a distro built by three people, As of now, the GUI is built, Ethernet works, copper has its own pck manager called "ingot" (get it? copper ingot... anyway) </p>'
-    +       '<p>Something broken or missing? Open an issue on the <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub repo</a>, or fix it yourself and send a pull request <--- this one please</p>'
+    +       '<p>Something broken or missing? Open an issue on the <a href="https://github.com/12hrformat/copper" target="_blank">GitHub repo</a>, or fix it yourself and send a pull request <--- this one please</p>'
     +     '</div>'
     +   '</div>'
 
@@ -559,7 +559,7 @@ function pageHome() {
     +       '<div class="step"><span class="step-num">3</span><h3>Report it or fix it</h3><p>Open an issue with what you found, or send a pull request.</p></div>'
     +     '</div>'
     +     '<div class="band-actions">'
-    +       '<a class="btn btn-band" href="https://github.com/Copper-linux/copper/releases" target="_blank">Download a pre-release</a>'
+    +       '<a class="btn btn-band" href="https://github.com/12hrformat/copper/releases" target="_blank">Download a pre-release</a>'
     +       '<a class="btn btn-band-ghost" href="#/contributions">How to contribute</a>'
     +     '</div>'
     +   '</section>'
@@ -576,7 +576,7 @@ function pageDaily() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>About</b></div>'
     +         '<div class="list-group-item">'
-    +           '<p>A desktop distro for web, code, school, work and productivity. We\'re three people, so there will be bugs and glitches (but I\'m good at coding so don\'t expect bugs). <a href="https://github.com/Copper-linux/copper" target="_blank">Tell us about them</a> and we\'ll actually try to fix them.</p>'
+    +           '<p>A desktop distro for web, code, school, work and productivity. We\'re three people, so there will be bugs and glitches (but I\'m good at coding so don\'t expect bugs). <a href="https://github.com/12hrformat/copper" target="_blank">Tell us about them</a> and we\'ll actually try to fix them.</p>'
     +         '</div>'
     +       '</div>'
     +     '</div>'
@@ -611,8 +611,8 @@ function pageDaily() {
     +         '<div class="panel-heading"><b>Download Copper Linux</b></div>'
     +         '<div class="list-group-item">'
     +           '<p>There is no stable ISO yet &mdash; no point pretending otherwise. What is out there: pre-releases on GitHub, published as source. Grab one, build it, and tell us what breaks.</p>'
-    +           '<a href="https://github.com/Copper-linux/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
-    +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">GitHub Repository</a>'
+    +           '<a href="https://github.com/12hrformat/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
+    +           '<a href="https://github.com/12hrformat/copper" target="_blank" class="btn btn-default">GitHub Repository</a>'
     +           '<p>News and screenshots land on Instagram: <a href="https://instagram.com/copperlinux" target="_blank">@copperlinux</a>.</p>'
     +         '</div>'
     +       '</div>'
@@ -656,8 +656,8 @@ function pageSecurity() {
     +         '<div class="panel-heading"><b>Status</b></div>'
     +         '<div class="list-group-item">'
     +           '<p>Deadlight has no image to download yet. The edition is being assembled on the <b>main</b> branch: the reskin lands first, the toolkit fills in behind it.</p>'
-    +           '<p>Watch it happen on <a href="https://github.com/Copper-linux/copper" target="_blank">GitHub</a>, see the planned tools in the <a href="#/tools">tools directory</a>, or start from a Copper pre-release.</p>'
-    +           '<a href="https://github.com/Copper-linux/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
+    +           '<p>Watch it happen on <a href="https://github.com/12hrformat/copper" target="_blank">GitHub</a>, see the planned tools in the <a href="#/tools">tools directory</a>, or start from a Copper pre-release.</p>'
+    +           '<a href="https://github.com/12hrformat/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
     +           '<a href="#/tools" class="btn btn-default">Tools Directory</a>'
     +           '<p>Deadlight updates get posted on Instagram: <a href="https://instagram.com/deadlightlinux" target="_blank">@deadlightlinux</a>.</p>'
     +         '</div>'
@@ -679,7 +679,7 @@ function pageTools() {
     +       '<div class="panel-heading"><b>Information</b></div>'
     +       '<div class="list-group-item">'
     +         '<p>Every tool in the Deadlight toolkit lands in the table below.</p>'
-    +         '<p><b>Want to submit a tool?</b> Open an <a href="https://github.com/Copper-linux/copper/issues/new" target="_blank">issue</a> or a <a href="https://github.com/Copper-linux/copper/pulls" target="_blank">pull request</a> &mdash; entries live in <code>tools.json</code>, no HTML surgery required.</p>'
+    +         '<p><b>Want to submit a tool?</b> Open an <a href="https://github.com/12hrformat/copper/issues/new" target="_blank">issue</a> or a <a href="https://github.com/12hrformat/copper/pulls" target="_blank">pull request</a> &mdash; entries live in <code>tools.json</code>, no HTML surgery required.</p>'
     +         '<p><span class="blyellow">Still in development:</span> no tools shipped yet, so this list is mostly empty. It fills in as Deadlight comes together.</p>'
     +         '<p><b>Tool count:</b> <a href="#/tools"><span id="tool-count">0</span></a>'
     +         '<input type="text" id="searchTools" onkeyup="searchTools()" placeholder="Input tool name" title="Type in a name"></p>'
@@ -742,8 +742,8 @@ function pageContributions() {
     +       '<div class="panel panel-default text-left">'
     +         '<div class="panel-heading"><b>Get Started</b></div>'
     +         '<div class="list-group-item">'
-    +           '<a href="https://github.com/Copper-linux/copper" target="_blank" class="btn btn-default">GitHub Repository</a> '
-    +           '<a href="https://github.com/Copper-linux/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
+    +           '<a href="https://github.com/12hrformat/copper" target="_blank" class="btn btn-default">GitHub Repository</a> '
+    +           '<a href="https://github.com/12hrformat/copper/releases" target="_blank" class="btn btn-default">Pre-releases</a> '
     +           '<a href="#/track" class="btn btn-default">Track Development</a>'
     +         '</div>'
     +       '</div>'
@@ -789,7 +789,7 @@ function pageTrack() {
     +           ' <button type="button" id="track-refresh" class="btn btn-default btn-xs">Refresh now</button>'
     +         '</div>'
     +         '<div class="list-group-item">'
-    +           '<div class="info"><p><i class="fas fa-sync-alt"></i> Refreshes every minute. Tracking the <b>main</b> branch of <b>Copper-linux/copper</b>.</p></div>'
+    +           '<div class="info"><p><i class="fas fa-sync-alt"></i> Refreshes every minute. Tracking the <b>main</b> branch of <b>12hrformat/copper</b>.</p></div>'
     +           '<div id="track-banner"></div>'
     +           '<div id="track-status" class="track-status"></div>'
     +           '<div id="track-feeds"></div>'
